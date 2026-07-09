@@ -3,8 +3,8 @@ library(DBI)
 library(fst)
 library(data.table)
 
-library(foreach)
-library(doParallel)
+# library(foreach)
+# library(doParallel)
 library(fst)
 
 registerDoParallel(4L)

@@ -16,6 +16,9 @@
 select <- dplyr::select
 
 read_theoretical_minimum_files <- function() {
+  
+  print('Reading Theoretical Minimum files')
+  
   # read in theoretical minimums for each morbidity
 cervical_theoretical_minimum <<- read.fst( './3_pre_main/theoretical_minimum/cervical_theoretical_minimum.fst')
 crc_theoretical_minimum <<- read.fst( './3_pre_main/theoretical_minimum/crc_theoretical_minimum.fst')
@@ -49,6 +52,8 @@ osteoarthritis_theoretical_minimum <<- read.fst( './3_pre_main/theoretical_minim
 
 
 read_joint_distribution_files <- function(){
+  
+  print('Reading Joint Distribution files')
   
   bmi_stratified_prevalence <<- read.fst( './3_pre_main/joint_distributions/bmi_stratified_prevalence.fst')
   child_bmi_stratified_prevalence <<- read.fst( './3_pre_main/joint_distributions/child_bmi_stratified_prevalence.fst')
