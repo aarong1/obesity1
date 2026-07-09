@@ -15,7 +15,7 @@ library(sf)
 # load(".RData")
 
 
-# source('global.R')
+source('global.R')
 source('1_2_utils/main_configuration.R')
 
 # costs <- calculate_costs_fn(as.data.table(past_populations))
