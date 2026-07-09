@@ -37,17 +37,18 @@ download.file(
   destfile = "./3_pre_main/intermediate_populations/initial_time_zero_population.fst",
   mode = "wb"
 )
-
+print('fine')
 initial_time_zero_population <- read.fst('3_pre_main/intermediate_populations/initial_time_zero_population.fst')
-
+print('fine')
 download.file(
   "https://storage.googleapis.com/time_one_population_w_deaths/populations/base_population_w_physiological_and_modifiable_risk_factors.fst",
   destfile = "./3_pre_main/intermediate_populations/base_population_w_physiological_and_modifiable_risk_factors.fst",
   mode = "wb"
 )
-
+print('fine')
 base_population_w_physiological_and_modifiable_risk_factors <- read.fst('3_pre_main/intermediate_populations/base_population_w_physiological_and_modifiable_risk_factors.fst')
 
+print('fine')
 # download.file(
 #   "https://storage.googleapis.com/time_one_population_w_deaths/populations/full_history_past_populations.fst",
 #   destfile = "./3_pre_main/intermediate_populations/full_history_past_populations.fst",
@@ -59,8 +60,9 @@ download.file(
   destfile = "./3_pre_main/intermediate_populations/time_one_population.fst",
   mode = "wb"
 )
-
+print('fine')
 past_populations <- read.fst('./3_pre_main/intermediate_populations/time_one_population.fst')
+print('fine')
 
 past_populations$intervention = 'non-intervention'
 
