@@ -7,7 +7,7 @@ library(data.table)
 # library(doParallel)
 library(fst)
 
-registerDoParallel(4L)
+# registerDoParallel(4L)
 threads_fst(5)
 data.table::setDTthreads(5) #this is so that don't use all the processors
 
