@@ -5,6 +5,25 @@ library(sparkline)
 library(dplyr)
 library(purrr)
 
+models <- tibble::tibble(
+  name      = c("Margaret Arellano", "Charles Robinson", "Michael Nguyen",
+                "Robert Boyer", "Jade Curry", "Gregory Wilkins",
+                "Carla Fernandez", "Daniel Chavez", "Mary Thomas", "Erin Smith"),
+  email     = c("richard.stewart@hscni.net", "tyler.bright@hscni.net",
+                "deanna.norris@hscni.net", "michelle.bradley@hscni.net",
+                "dana.hernandez@hscni.net", "chelsea.reed@hscni.net",
+                "emily.freeman@hscni.net", "alexis.day@hscni.net",
+                "david.chen@hscni.net", "maria.bradley@hscni.net"),
+  risk1     = "Obesity",
+  risk2     = "cholesterol",
+  age_band  = c("40-49","60-69","30-39","60-69","60-69",
+                "20-29","30-39","40-49","60-69","80-89"),
+  model_id  = 1:10,
+  spark_vals = list(
+    1:10,1:10,1:10,1:10,1:10,1:10,1:10,1:10,1:10,1:10
+  )
+)
+
 # Example data backing your “registry”
 
 render_model_registry <- function(df) {
