@@ -37,6 +37,8 @@ source('./components/startup_overlay_div.R')
 source('./components/hatched_sub_title.R')
 source('./components/circular_value.R')
 source('./decal_bar.R')
+source('./components/rag_line.R')
+
 source('./components/model_registry_list.R')
 source('./scenarios_div.R')
 
