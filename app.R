@@ -12,7 +12,6 @@ library(qs)
 library(readxl)
 library(tidyverse)
 library(sf)
-library(profvis)
 # load(".RData")
 
 

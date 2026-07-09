@@ -539,35 +539,35 @@ trusts_map
 # 
 # 
 # 
-# x <- pop |> 
+# x <- pop |>
 #   count(HSCT=first(HSCT),DEA2014_name=first(DEA2014_name),soa_name)
 # 
-# x0 <- pop |>
-#   count(item = HSCT, parent = 'NI', name='value')
+x0 <- pop |>
+  count(item = HSCT, parent = 'NI', name='value')
 # 
-# x1 <- pop |>
-#   count(parent = HSCT, item = DEA2014_name, name='value')
+x1 <- pop |>
+  count(parent = HSCT, item = DEA2014_name, name='value')
 # 
-# x2 <- pop |>
-#   count(parent = DEA2014_name, item = Urban_mixed_rural_status, name='value')
+x2 <- pop |>
+  count(parent = DEA2014_name, item = Urban_mixed_rural_status, name='value')
 # 
 # 
-# x2 <- pop |>
-#   group_by(item = soa_name) |> 
-#            summarise( parent = first(DEA2014_name), 
-#                       #obese = sum(bmi %in% c('obese','overweight')),
-#                                   value = n()) 
-#   # count(item) |> 
-#   # filter(n>1)
+x2 <- pop |>
+  group_by(item = soa_name) |>
+           summarise( parent = first(DEA2014_name),
+                      #obese = sum(bmi %in% c('obese','overweight')),
+                                  value = n())
+  # count(item) |>
+  # filter(n>1)
 # 
-# xx <- rbind(
-# data.frame(item = "NI",  parent = '', value = 1),
-# x0,
-# x1,
-# x2[1:400,]
-# )
+xx <- rbind(
+data.frame(item = "NI",  parent = '', value = 1),
+x0,
+x1,
+x2[1:400,]
+)
 # 
-# geo <- data.tree::FromDataFrameNetwork(xx)
+geo <- data.tree::FromDataFrameNetwork(xx)
 # 
 # #add decal
 # 
