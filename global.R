@@ -30,7 +30,8 @@ source('1_2_utils/main_configuration.R')
 # write.fst(past_populations %>% slice_sample(prop = 0.5), './3_pre_main/intermediate_populations/time_one_population.fst')
 
 
-url <- "https://storage.googleapis.com/my-public-bucket/data/example.fst"
+
+dir.create('./3_pre_main/intermediate_populations')
 
 download.file(
   "https://storage.googleapis.com/time_one_population_w_deaths/populations/initial_time_zero_population.fst",
@@ -56,7 +57,6 @@ print('fine')
 #   mode = "wb"
 # )
 
-dir.create('./3_pre_main/intermediate_populations')
 
 download.file(
   "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population.fst",
