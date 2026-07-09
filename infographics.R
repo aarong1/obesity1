@@ -1,7 +1,5 @@
 # infographics.R
-
-
-
+library(data.tree)
 
 style <- list(
   normal = list(opacity = 0.5), # normal

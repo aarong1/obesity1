@@ -1233,6 +1233,37 @@
         "Archs": "data_table.so.dSYM"
       }
     },
+    "data.tree": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "data.tree",
+        "Type": "Package",
+        "Title": "General Purpose Hierarchical Data Structure",
+        "Version": "1.2.0",
+        "Language": "en-US",
+        "Date": "2025-08-06",
+        "Authors@R": "c(\n      person(\n        \"Russ\", \"Hyde\",\n        role = c(\"ctb\"),\n        comment = \"improve dependencies\"\n      ),\n      person(\n        \"Chris\", \"Hammill\",\n        role = c(\"ctb\"),\n        comment = \"improve getting\"\n      ),\n      person(\n        \"Facundo\", \"Munoz\",\n        role = c(\"ctb\"),\n        comment = \"improve list conversion\"\n      ),\n      person(\n        \"Markus\", \"Wamser\"\n        , role = c(\"ctb\")\n        , comment = \"fixed some typos\"\n      ),\n      person(\n        \"Pierre\", \"Formont\"\n        , role = c(\"ctb\")\n        , comment = \"additional features\"\n      ),\n      person(\n        \"Kent\", \"Russel\"\n        , role = c(\"ctb\")\n        , comment = \"documentation\"\n      ),\n      person(\n        \"Noam\", \"Ross\"\n        , role = c(\"ctb\")\n        , comment = \"fixes\"\n      ),\n      person(\n        \"Duncan\", \"Garmonsway\"\n        , role = c(\"ctb\")\n        , comment = \"fixes\"\n      ),\n      person(\n        \"Christoph\", \"Glur\"\n        , role = c(\"aut\", \"cre\")\n        , comment = \"R interface\"\n        , email = \"christoph.glur@powerpartners.pro\"\n      )\n    )",
+        "VignetteBuilder": "knitr, rmarkdown",
+        "Imports": "R6, stringi, methods",
+        "Suggests": "Formula, graphics, testthat, knitr, rmarkdown, ape, yaml,\nnetworkD3, jsonlite, treemap, party, partykit, doParallel,\nforeach, htmlwidgets, DiagrammeR (>= 1.0.0), mockery, rpart",
+        "Enhances": "igraph",
+        "Description": "Create tree structures from hierarchical data, and traverse the\n    tree in various orders. Aggregate, cumulate, print, plot, convert to and from\n    data.frame and more. Useful for decision trees, machine learning, finance,\n    conversion from and to JSON, and many other applications.",
+        "License": "GPL (>= 2)",
+        "URL": "https://github.com/gluc/data.tree",
+        "BugReports": "https://github.com/gluc/data.tree/issues",
+        "Depends": "R (>= 3.5)",
+        "RoxygenNote": "7.3.2",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-08-25 09:55:30 UTC; ChristophGlur",
+        "Author": "Russ Hyde [ctb] (improve dependencies),\n  Chris Hammill [ctb] (improve getting),\n  Facundo Munoz [ctb] (improve list conversion),\n  Markus Wamser [ctb] (fixed some typos),\n  Pierre Formont [ctb] (additional features),\n  Kent Russel [ctb] (documentation),\n  Noam Ross [ctb] (fixes),\n  Duncan Garmonsway [ctb] (fixes),\n  Christoph Glur [aut, cre] (R interface)",
+        "Maintainer": "Christoph Glur <christoph.glur@powerpartners.pro>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-08-25 11:00:02 UTC",
+        "Built": "R 4.5.0; ; 2025-08-25 23:25:06 UTC; unix"
+      }
+    },
     "dataui": {
       "Source": "github",
       "Repository": null,
@@ -5309,6 +5340,9 @@
     "3_pre_main/intermediate_populations/time_one_population.fst": {
       "checksum": "41cdcccea82eb52c7e43374f98d55bb8"
     },
+    "3_pre_main/intermediate_populations/time_onepopulation.fst": {
+      "checksum": "41cdcccea82eb52c7e43374f98d55bb8"
+    },
     "3_pre_main/joint_distributions/alcohol_stratified_prevalence.fst": {
       "checksum": "d75613d2170845b69ca47469639eee72"
     },
@@ -5691,7 +5725,7 @@
       "checksum": "068b523135ef3ef4f5421fa01c74b3e0"
     },
     "app.R": {
-      "checksum": "b8648235cfcc440c198f257b2a53b014"
+      "checksum": "a87be445752671e83254aaedd74a74e3"
     },
     "bed_days_estimate.R": {
       "checksum": "4deac21ba66e24a1e226013d064a0d65"
@@ -6267,7 +6301,7 @@
       "checksum": "2c66293da26f4a8e9b1a22aad3658c2b"
     },
     "global.R": {
-      "checksum": "eb7b140232616622d1a9c25f4ff9a93c"
+      "checksum": "62e8a5ea4684e9e9ef50f94e38e0a8c9"
     },
     "help_component.R": {
       "checksum": "6e3adc4397883ca96780bf959928d553"
@@ -6276,7 +6310,7 @@
       "checksum": "d9ad00583f11a44e9e9c847e6a29f4d6"
     },
     "infographics.R": {
-      "checksum": "359e5cc03d9cf8f094b14ac16ea96c4e"
+      "checksum": "9f1383b5dde060f9e0a36bd356926025"
     },
     "initial_time_zero_population.csv": {
       "checksum": "f6f35c4bd1256594d94d4d7d0631c959"
@@ -8037,7 +8071,7 @@
       "checksum": "11728f0ac2618d29dbbc65a5fb6f0fd9"
     },
     "renv.lock": {
-      "checksum": "de8fa9d59923fa29efc56bb8340a8ff3"
+      "checksum": "3d7d255940d3e94526c9fe4364a6d4e3"
     },
     "retired/app_click_expand.R": {
       "checksum": "9e808e438f915e521275ed8472d57ba4"
