@@ -31,7 +31,7 @@ library(purrr)
 # source('main_utils_2_4.R')
 #
 # source('./modules/chart_update_module_4/prep_interactive_model_run.R')
-source('~/Documents/SIB/PHM/obesity/load_all_files_wrap_in_fn.R')
+source('load_all_files_wrap_in_fn.R')
 
 # source('prep_interactive_model_run.R')
 
