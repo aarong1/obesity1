@@ -29,9 +29,16 @@ source('1_2_utils/main_configuration.R')
 # write.fst(first_population %>% slice_sample(prop = 0.5), './3_pre_main/intermediate_populations/first_population.fst')
 # write.fst(past_populations %>% slice_sample(prop = 0.5), './3_pre_main/intermediate_populations/time_one_population.fst')
 
-
-
 dir.create('./3_pre_main/intermediate_populations')
+
+download.file(
+  "https://storage.googleapis.com/time_one_population_w_deaths/populations/full_history_past_populations.fst",
+  destfile = "./3_pre_main/intermediate_populations/full_history_past_populations.fst",
+  mode = "wb"
+)
+
+full_history_past_populations <- read.fst('3_pre_main/intermediate_populations/full_history_past_populations.fst')
+
 
 
 
