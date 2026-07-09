@@ -15,7 +15,7 @@ library(sf)
 # load(".RData")
 
 
-source('global.R')
+# source('global.R')
 source('1_2_utils/main_configuration.R')
 
 # costs <- calculate_costs_fn(as.data.table(past_populations))
@@ -35,8 +35,10 @@ source('./progress_component.R')
 source('./components/button_block_box_shadow.R')
 source('./components/startup_overlay_div.R')
 source('./components/hatched_sub_title.R')
-source('./components/model_registry_list.R')
 source('./components/circular_value.R')
+source('./decal_bar.R')
+source('./scenarios_div.R')
+source('./components/model_registry_list.R')
 
 
 
@@ -47,8 +49,6 @@ print(paste('running','/advanced_e_charts_trend.R')); source('./advanced_e_chart
 print(paste('running','/pivottable.R')); source('modules/pivot_module/pivottable.R')
 print(paste('running','/pivottable_module.R'));source('modules/pivot_module/pivottable_module.R')
 
-source('./decal_bar.R')
-source('./scenarios_div.R')
 
 # #
 # lapply(
