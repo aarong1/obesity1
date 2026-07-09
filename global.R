@@ -61,12 +61,14 @@ download.file(
  
 base_population_w_physiological_and_modifiable_risk_factors <- read.fst('3_pre_main/intermediate_populations/base_population_w_physiological_and_modifiable_risk_factors.fst')
 
- 
-# download.file(
-#   "https://storage.googleapis.com/time_one_population_w_deaths/populations/full_history_past_populations.fst",
-#   destfile = "./3_pre_main/intermediate_populations/full_history_past_populations.fst",
-#   mode = "wb"
-# )
+
+download.file(
+  "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population_w_deaths.fst",
+  destfile = "./3_pre_main/intermediate_populations/time_one_population_w_deaths.fst",
+  mode = "wb"
+)
+
+time_one_population_w_deaths <- read.fst('3_pre_main/intermediate_populations/time_one_population_w_deaths.fst')
 
 
 download.file(
