@@ -37,6 +37,7 @@ download.file(
   destfile = "./3_pre_main/intermediate_populations/initial_time_zero_population.fst",
   mode = "wb"
 )
+
 initial_time_zero_population <- read.fst('3_pre_main/intermediate_populations/initial_time_zero_population.fst')
 
 download.file(
@@ -54,7 +55,7 @@ base_population_w_physiological_and_modifiable_risk_factors <- read.fst('3_pre_m
 # )
 
 download.file(
-  "https://storage.cloud.google.com/time_one_population_w_deaths/populations/time_one_population.fst",
+  "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population.fst",
   destfile = "./3_pre_main/intermediate_populations/time_one_population.fst",
   mode = "wb"
 )
