@@ -1,0 +1,151 @@
+<!-- https://echarts.apache.org/examples/en/editor.html?c=bar-rich-text&edit=1&reset=1&code=MYewdgzgLgBA7gUwIZQBYIE4ElSRgXhgG8AoGGAZQFcwwBPALhgCUB5VgFQH0AFAQQ4AJGAGoYAcgD0AExRJJSCBARRJASwC2Ac0mIU6DJIg16XAIwAmABwA6AA5gt4gDRkYAYQA2IKtMYt2bn4hUQkZOQUlFXVtXWQ0TElgb186c2t7Rxc3ClQQRAwIJjZOXgFhMSlZKHlFZVVNHT0Ewwg8goh02wcnEgBfAG4SXGgYZQw1BAgAGSQAIwRPAmI3NvymKAwqBH6hkDsoNXBl0nJDqE8EJlPyGCgEAA8oJnEAdXiDShrD6DVgCHEbj6rjOIBAnkOdmubjOEy0WkwLyQDzUAJBt2RqJ4IDUYHuGGht1uUDodiuEjaSGk-UBRL6QPRlwRYGkhNu1SQTAA2uJ3GoSTA-J47KgkC4JHyBQAhFRi5wS_l0GAAcSQGg0YoAugy3FoJqyVkTLgAzZ4wMwABgtOtB4LmIAebPIazgGy2CHR5GN8SoGHJNyJECQADcEHwIFgNQjrvS6TaYA8-CiiobiaTyeJg0hPNtskSwGqMwARJB0NEwmCYmbzRZO27GkAYDVQfEvIhZnMIPq026xmDAtx0JOouskskvYAoBBaRt0PO3XGhwrkzbbT0wDnc8TUWhz-W8lJ-cXb9qYAGa9dV2YLTx1r2N5utmDGmjAQ7HAAUHe2AEpU0TyD9KBfTACQiHEUJvwQUJxAAH37AAdMB22zbZYIgsQoJg7shgA_t13IDUMC0XEmAsC0CJgCZgFQO9biguijVxBBBAQNQtFQM0AGYKIrPDs3YsAJwQPFMB7PCBzw8gd3oRjbnQdjOKYAAWXipNuOA1GkNAVLU9TK08QThNEjB53UuYkGAABrPUfBZdxwUbOSiU0JBo3gD5MBwcAIBsGS6D4gDJP0-0MGkTBmCpNQqCKS1KKJULwowV4tJ0sx4tuRLMAc7wCXEABiY1jSsKwzDMcSgoyrwfD8ZyYAUjizVUjLyAErQhIkYARPxMypIs6zbJoaQcqc_99Nc9zmgMbzIBsarUkCukWpgLKMEi6RotivTzMbJKUu02j0sWzLduyxy8sK4rSvK47grw3J8jPOqGqUmBmuO1rDPa4yeuW_qbIwOzhvOuryAm8kpq8kY_NPQoPvw-HVvWzaGDixHTuS1LDr-jGRouoqSrKiq4wkis-2C8ZJhTLkKwDW4Cw0DNJSVIURTlQKxwzCzTMozcYC5MwADYAFZ5TMAB2CiYB4i9As8GtbzGTAqevRZKKIqzsVxM06cDOgNHtTwKDUAAvckjvUiB9cN1givqbkpfEYWLQAUnEWX1Plm86obJsUCfcQiCQWCg76JC-iIOYQ7mPp-yIYAQ-APpuz-yyAaBvGXmIuYPwsZSLGcPOC6Ln9erw1bM4kfKkBrsuANW_adPNHGwoiqKYqYUX4bsKkNscbllLFi0Pf0wywBYtjGrIwXlskSQxlFak4ClHMCRgLv9JgOeF6pfJK4Kq0LTrolt8pJfbeNeoAA0mG2qTT8X_IL_qABNJgLf0uwQAgfkjg68Q4ScWPuyVENQwBdTInfPC1FaJjXUpyOB-k2r_y6iZYBeFQC5ReJdY06CAINjxMbM278rDLSJPcJ4uRd7L1XmRMhxJHhQCoUvfe-VD54PIYw5hT87YqBvjAKB-kKFMMfnAZ-Kg37N3hpwp4UpcYgyrlxJRHCGGyIxo3WBFhpEI03uQOYoNbiYNGgVJRXFiZSTuvpYABjyBGLXgVAm10VFnEYXI1uGBWHsPoS4tR7iNHv28c-cATDTbkgsFo3R_Z4Z9gkhlPmNNN5EDuOmF4GoHjigZhmNJG5SwpggpYvCSTOapNxBkwsJTQKyDLC8KJ6ltSkyWrTQKmSXjMxgDKGoddikSG5nXL2tYlYTCmKrTwvM5DcjMM7IeotzSWnqb2dcusYAtIVAKVU6p2Z4W6eIXplF-mK0psMhWYyajcnCVLKwBcYCCy4vM8gfZtSDCAA-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body style="margin:0;padding:0">
+  <div id="main" style="height:360px"></div>
+<script type="module">
+
+var chartDom = document.getElementById('main');
+var myChart = echarts.init(chartDom);
+var option;
+
+const Icons = {
+  Car: './car_van_2_icon_png.png', //ROOT_PATH + '/data/asset/img/weather/sunny_128.png',
+  Overcrowding: './25694.png',
+  Job: './briefcase_2_icon_png.png',
+  Ownership: 'key.png'
+};
+const seriesLabel = {
+  show: true
+};
+option = {
+  title: {
+    //text: 'Townsend Deprivation'
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
+  legend: {
+    //data: ['City Alpha', 'City Beta', 'City Gamma', 'City Delta']
+  },
+  grid: {
+    left: 100
+  },
+  toolbox: {
+    show: true,
+    feature: {
+      saveAsImage: {}
+    }
+  },
+  xAxis: {
+    type: 'value',
+    //name: '%',
+   // axisLabel: {
+   //   formatter: '{value}',
+   //   textStyle: {
+   //     align: 'right'
+   //   }
+   // },
+
+    splitLine:{ show: false },
+    axisLine: { show: false },
+    axisTick: { show: false },
+    axisLabel: { show: false }, 
+  },
+  yAxis: {
+
+    splitLine:{ show: false },
+    axisLine: { show: false },
+    axisTick: { show: false },
+    axisLabel: { show: false }, 
+
+    type: 'category',
+    inverse: false,
+    data: ['Car', 'Overcrowding', 'Job','Ownership'],
+    axisLabel: {
+           align: 'right',
+            textStyle: {
+        align: 'right'
+      },
+      formatter: function (value) {
+        return '{' + value + '| }\n{value|' + value + '}';
+      },
+      margin: 20,
+      rich: {
+        value: {
+          lineHeight: 20,
+          align: 'right',
+          color: '#000000',
+          fontWeight: 'bold'
+        },
+        Car: {  
+          height: 20,
+          //width: 40,
+          align: 'right',
+          backgroundColor: {
+            image: Icons.Car
+          },
+          borderRadius: 10,
+          borderWidth: 0,
+          borderColor: '#ff8811'
+        },
+        Overcrowding: {
+          height: 20,
+          align: 'right',
+          backgroundColor: {
+            image: Icons.Overcrowding
+          },
+          borderRadius: 10,
+          borderWidth: 0,
+          borderColor: '#ff8811'
+        },
+        Job: {
+          height: 20,
+          align: 'right',
+          backgroundColor: {
+            image: Icons.Job
+          },
+          borderRadius: 10,
+          borderWidth: 0,
+          borderColor: '#ff8811'
+        },
+        Ownership: {
+          height: 20,
+          align: 'right',
+          backgroundColor: {
+            image: Icons.Ownership
+          },
+          borderRadius: 10,
+          borderWidth: 0,
+          borderColor: '#ff8811'
+        }
+      }
+    }
+  },
+  series: [
+   {
+      name: 'DZ',
+      type: 'bar',
+      itemStyle: {
+        borderRadius: 5,
+        color: '#000000'
+      },
+      data: [80,60,40,80]
+     
+    }
+
+  ]
+};
+
+option && myChart.setOption(option);
+</script>
+</body>
+</html>

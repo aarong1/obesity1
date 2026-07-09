@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body style="margin:0;padding:0">
+  <div id="main" style="width:600px;height:400px;"></div>
+
+  <script>
+    var chart = echarts.init(document.getElementById('main'));
+
+    // Simple inline SVG (a blue circle)
+    var svgIcon = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">' +
+        '<circle cx="12" cy="12" r="10" fill="steelblue"/>' +
+      '</svg>'
+    );
+
+    var option = {
+      xAxis: {
+        type: 'category',
+        data: ['A', 'B', 'C']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [{
+        type: 'bar',
+        data: [120, 200, 150],
+        label: {
+          show: true,
+          position: 'top',
+          formatter: '{icon|} {c}',
+          rich: {
+            icon: {
+              width: 16,
+              height: 16,
+              backgroundColor: {
+                image: svgIcon
+              }
+            }
+          }
+        }
+      }]
+    };
+
+    chart.setOption(option);
+  </script>
+</body>
+</html>

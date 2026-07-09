@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body style="margin:0;padding:0">
+  <div id="main" style="width:600px;height:400px;"></div>
+
+  <script>
+
+var chartDom = document.getElementById('main');
+var myChart = echarts.init(chartDom);
+var option;
+
+var runs = 2;
+var measures = 2;
+var iconBridge =
+  'image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAShSURBVHgBzVhdTFxFFD4zCG3QNBsoBqE0t4m+FBNQY1Jq0l0T06QvtaStKyVSIJL4YoDU19rybgM+o0gfCkVL8A2VJi4P1p+q3Qfpg5r0YqXdZIXcEPu3hHt6zt2dy9zL/rLLtl8y2TuzMzvfnjnz3XOOgC1g957JkL2OrQJkEAFbQdgBQBFwvhRo0bNJ35kI9nyFfCYSX3onCgVC5DvRMGYCq4mH/YDQDYAGFAZTSByqXJeRWKzDzGdBXsRqGibPAdgDrlW2DhOEGF+50zGUa2JWYvX1k0ZC4Aw9turju3ZVwpHDjdDWVgfN+wOwd8+zzhhjdXUN/vn3HizctODaT3H45tslZ8xPsArFm9msl5FYbePEaUQc0a3URATe730R3j25zyWSD6aumHBh+CbcJsIaLCGgZ/nOqa8hX2IOKRvGVZ9JfDTYDH29L0ExGB37Cz4ZXvBYUGBF93IsfBFyEattmDiGCDOqz1aangrRZzWUAmy14+F5j/XSkfMQc3xK2jfU8b1M/jM2+kbJSOnkevuuwR/khylY5HOv6D4n9QXk6N8rUmyp7SC18dsHnc8UAqlLBpuIJSUBDH5mnyrl8WUiNz0V1C9Ra03DpfMeYnyEgNitBtnRdVI7qipL2nRyvJcLFP0s5C6xtQo7BClr8eRib18h4L30I11N3B9wiaEtzqlvzgzs37T4UWLNaWfPfuzpc2O819WVcw6P630drI0uUJx2iNU1XmJVN7jD5x0+aUC54RNsY3f9ZEjUvDDBphvmkfAJA0YuvL5poe4XpUA6q/Wf+QW+vLKouoOSXgtB1Ws7UAdPCgfbnnefEURIohbCNDcXGzxsHSzmCgKwhZ3fUAN7N25H2dHk3Tsg9eihkIih1PDtHZDwlEI6MXoKaQI6B3yLrl//FbpIr/xgDZubu+pqVD7z0sG3twUkF7eoIbffonGkhVnboSDlH3xxqLW0tBQ9T7XfaW/Fg9oNlgs3g1lYsCAXgodcdYGjR98uep6CFgKxXCxKCgrn1cCPFKM/Keh7k1xEpEThWmz2u6WMfrbdmKWkRcGmXFT+F+uIAKdVkHTAqa9uQbnByYpmENOiBDkpFwLdeHt07G8oNziDUhAonJzTIWZXJUaUbHA8Pvr5n1Au8F5aYmKuA0QcgmrECWsxGZexCl+dPbytoTWDCb11ZG7jGBGHVmKd5z3EkuQmKENKZt2lTtvSkfKlcebK3VP7VMfzSrJt0a4faW/fD/R5H7aDFKdvLina06aSgT7HQ8yivE7YclD1WfSOhyMlJacspQuqANFj+eoYFf6FD/6fjlY/d2KRZh/jviMhdJ137pDw2qu1UAzY0T/48GeIxx9ukELsWb7bedk/N3NRhUsFgF/4iyqcrBSSF/Afu0za+BnJkKeoQscnbBhcjnWOp1uXtQwVoHxTcnauBZMMtwx1IFWGavKVoW4ny1D8msnwNomST7VbWylD6aipJykRTlplQDHgi2XDp0oSsk6FPMHWI4cMoUC3lFAAI5OS14v2zuoRy2zPHcIUQkxHgHJRaYsQBVtBCpsMpybrKQ5Li/wzSj8+z0FC6n1cEB4DRnyPhnXINe8AAAAASUVORK5CYII=';
+var iconAdv =
+  'image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAASBSURBVHgBxVhNTFxVFD73QmuDppmAGDIUMk10U5o4akxKu2DcNLqDVBwpiwKRxJgYIO3SpG3ikgbYuEERFoWOLaEbU3XjsLDqqiSWJv4kPqi0kyDkhWhtaLjHc+6897jvdQbe/PZLXt67990395tzzz33fEdAEXjxyFxC7WBcgOxAwDgIFQEUEf1SoE3PFr2zENRijaxNr6+9twQFQoQdGIstRLa2Hw8BQh8AxqAwWELi5QM7Mp3J9FhhPghFrD46dxFADXtWKR4WCDG9+aDn8n4D9yTW1DQX2xa4QI9xs//w4QPwzulmaG9vhLZjEWg98rzuY2xtPYHVv/6F5Xs23P5pHb75dk33BQkeRPHWXtbLS6yhefYcIo6bVmohAh8MvAzvdx/1iIRB6oYFV8buwX0ibMAWAvo3Hpy9CWGJaVIKpt02k7gw0gaDA69AKZic+h1Gx5Z9FhRY07eRSc7AfsQaorOdiLDgttlK86kE3eugHGCrnUku+qyXi5yPmPYpqe64y3ec/Gdq8lTZSJnkBgZvw13yQwc2+dxrps9J8wNy9O9dUmypSpDa/e2T+u4g4mwyeIpYNiRAjJ/Zp8q5fPnIzac6zE0Ur49eveQjxksIiH1uJzt6JUmZ5HguDyiGOJB7xJ7UqAQ41uLBpe6+QsBzmUu6tf1o2COGSlx035wfPgbVBsdGDyjO8U00Nl+N7yhxhxu83r/+0gnVBse1N0997cU3SaeCJFIJdwAfM88CbJC3T0e9thIYr6VjoYMCqkb7icacHza1HodyIrN696m+k+0vwVc3VvQzgkhINFKYtrZSk4fiwcHchQB8tRac3cho3d0dPuT6h/mQun4Ths5/op8vjHykrzBo8c8dkWb2UEjGkA/J7k6YuPKpfh4d+0xfYRCYOyKhAiiWnAmpc3QHORK6qpELzG3zUnrEVv2JXFXJBZJIS1K48BTM8rIN5UZYckYKxOFiRVIMW3Q7fqQcvRJgcryz+cq3S825KVykJYV/z2K3vlsrq58VglskWlwo0qLy70xPGlhWQdYBU9f/hGqDxYphEMsmgZwNFwK9fHty6g+oNlhBuRAotObUxNTB7XE3bPDumPziN6gWeC5jR1o7AGmPmG31M6kJ9+3oOGvAR1BpMCGeywPijO0IEp9Kqo/OkkLKqu5yy7ZcpAIyztp8ePao2/AdSUqJLnNJBwZ/qIjlXPnmkaI5FSWH5hgfMTajUHLEbXPQO5NMl5WcaykzoAoQ/XagjlET/PC/f+aX6l54d4VG6xxbhxDazoeek/DG6w1QCtjRP/z4Z1hff7xLCrF/42HvteDY/EUVLhUAfhksqrBYSXbHICz4j12j2Pg5hSHfeUjLJxSMbGR6p3N9t2cZKkJ6U7I6N5JJhleGOuGUoVoCZaj72TIUHzN5TpMl8qkuu5gylIn6JlLIQsuqGJQC3lgKJjYzvZf2HQohwdYjh0ygQK+UUAAji8TrjDpUN25bXaFSmNDETERIi0qSfSSuOihtiumarK84LG3yzyX68UVOEpzzuCD8D7P4GjzPrpdpAAAAAElFTkSuQmCC';
+
+option = {
+  xAxis: [
+    {
+      //type: 'category',
+      data: iconBridge
+    }],
+  yAxis: {},
+  dataset: [
+    {
+      id: 0,
+      dimensions: ['pk', 'value', 'id', 'severity'],
+      source: [
+        [0, 0, 0, 'VO'],
+        [4, 2, 4, 'VI']
+      ]
+    },
+    {
+      id: 1,
+      fromDatasetIndex: 0,
+      transform: {
+        type: 'sort',
+        config: { dimension: 'id', order: 'asc' }
+      }
+    }
+  ],
+  series: [
+    // bg line
+    {
+      type: 'line',
+      lineStyle: {
+        width: 0
+      },
+      showSymbol: false,
+      markLine: {
+        animation: false,
+        lineStyle: {
+          color: 'DodgerBlue',
+          width: 1,
+          type: 'dashed'
+        },
+        symbol: 'circle',
+        symbolSize: 10,
+        emphasis: {
+          disabled: true
+        },
+        data: [[{ coord: [0, 1] }, { coord: [4, 1] }]]
+      }
+    },
+    // asset ADV 2
+    {
+      type: 'line',
+      lineStyle: {
+        width: 0
+      },
+      showSymbol: false,
+      markLine: {
+        animation: false,
+        lineStyle: {
+          type: 'solid'
+        },
+        symbolSize: 30,
+        symbolRotate: 0,
+        label: {
+          show: true,
+          distance: -15,
+          position: 'middle',
+          formatter: '{title|ADV 2}',
+          // backgroundColor: 'red',
+          backgroundColor: {
+            image: iconBridge
+          },
+          width: 30,
+          height: 30,
+          rich: {
+            title: {
+              padding: [-15, 0, 0, 0]
+            }
+          }
+        },
+        emphasis: {
+          scale: true,
+          focus: 'series',
+          label: {
+            show: true
+          },
+          lineStyle: {
+            width: 5,
+            color: 'blue'
+          }
+        },
+        data: [
+          [
+            {
+              symbol: iconAdv,
+              lineStyle: {
+                color: 'DarkBlue',
+                width: 3
+              },
+              emphasis: {
+                lineStyle: {
+                  width: 5,
+                  color: 'DarkBlue'
+                }
+              },
+              coord: [2, 1]
+            },
+            {
+              symbol: iconAdv,
+              coord: [3, 1]
+            }
+          ]
+        ]
+      }
+    }
+  ]
+};
+
+myChart.setOption(option);
+
+option && myChart.setOption(option);
+
+  </script>
+</body>
+</html>

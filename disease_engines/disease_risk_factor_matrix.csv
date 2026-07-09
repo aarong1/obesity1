@@ -1,0 +1,38 @@
+disease,engine_file,bmi,smoking,alcohol,physical_activity,hypertension,diabetes,cholesterol,pm25,sleep,ethnicity,age_sex_only,notes
+stroke,disease_engines/stroke_engine.R,1,1,1,1,1,1,1,1,0,0,0,Explicit RR-based multivariable risk engine
+chd,disease_engines/chd_engine.R,1,1,1,1,1,1,1,1,0,0,0,Explicit RR-based multivariable risk engine
+dementia,disease_engines/dementia_engine.R,1,1,1,1,1,1,0,1,0,0,0,Explicit RR-based multivariable risk engine
+diabetes_type_2,disease_engines/diabetes_engine.R,1,1,0,1,1,0,1,1,1,1,0,Explicit RR-based risk engine includes sleep and ethnicity
+heart_failure,disease_engines/heart_failure_engine.R,1,1,0,1,1,1,0,0,0,0,0,Explicit RR-based multivariable risk engine
+atrial_fibrillation,disease_engines/atrial_fibrillation_engine.R,1,1,1,0,1,1,1,0,0,0,0,Explicit RR-based multivariable risk engine
+kidney_disease,disease_engines/kidney_disease_engine.R,1,0,0,0,1,1,0,0,0,0,0,Explicit RR-based risk engine
+copd,disease_engines/copd_engine.R,0,1,0,0,0,0,0,1,0,0,0,Explicit risk factors in-file
+aortic_aneurysm,disease_engines/aortic_aneurysm_engine.R,1,1,1,1,1,0,1,0,0,0,0,Explicit RR-based multivariable risk engine
+asthma,disease_engines/asthma_engine.R,1,1,0,0,0,0,0,0,0,0,0,Explicit RR-based risk engine
+rheumatoid_arthritis,disease_engines/RA_engine.R,1,1,0,0,0,0,0,0,0,0,0,Explicit RR-based risk engine
+osteoarthritis,disease_engines/osteoarthritis_engine.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based risk engine
+osteoporotic_fracture,disease_engines/fracture_engine.R,1,1,1,0,0,0,0,0,0,0,0,Explicit RR-based risk engine
+hip_fracture,disease_engines/fracture_engine.R,1,1,1,0,0,0,0,0,0,0,0,Explicit RR-based risk engine
+lung_cancer,disease_engines/cancer/lung_cancer_engine.R,1,1,0,0,0,0,0,1,0,0,0,Explicit RR-based cancer engine
+colorectal_cancer,disease_engines/cancer/colorectal_cancer_engine.R,1,1,1,1,0,1,0,0,0,0,0,Explicit RR-based cancer engine
+female_breast_cancer,disease_engines/cancer/female_breast_engine.R,1,1,1,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+pancreatic_cancer,disease_engines/cancer/pancreatic_cancer.R,1,1,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+gallbladder_cancer,disease_engines/cancer/gallbladder_cancer_engine.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+oral_cancer,disease_engines/cancer/oral_cancer_engine.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+oesophageal_cancer,disease_engines/cancer/oesophageal_cancer.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+uterine_cancer,disease_engines/cancer/uterine_cancer.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+kidney_cancer,disease_engines/cancer/kidney_cancer_engine.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+ovarian_cancer,disease_engines/cancer/ovarian_cancer.R,1,0,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+cervical_cancer,disease_engines/cancer/cervical_cancer.R,0,1,0,0,0,0,0,0,0,0,0,Explicit RR-based cancer engine
+hypertension,disease_engines/hypertension_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+type1_diabetes,disease_engines/diabetes_type_1_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+prostate_cancer,disease_engines/cancer/prostate_cancer.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+brain_cancer,disease_engines/cancer/brain_cancer.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+epilepsy,disease_engines/epilepsy_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+ibd,disease_engines/ibd_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+interstitial_lung_disease,disease_engines/Intersistal_lung_disease_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+systemic_lupus_erythematosus,disease_engines/systemic_lupus_erythematosus_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+hypothyroidism,disease_engines/hypothyroid_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+alcohol_related_liver_disease,disease_engines/alcoholic_related_liver_disease.R,0,0,1,0,0,0,0,0,0,0,1,Table-driven incidence by age-sex and alcohol strata
+non_alcoholic_fatty_liver_disease,disease_engines/non_alcoholic_fatty_liver_disease.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
+osteoporosis,disease_engines/osteoporosis_engine.R,0,0,0,0,0,0,0,0,0,0,1,Primarily age-sex incidence lookup
