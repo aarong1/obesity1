@@ -83,7 +83,7 @@ ui <- page_fluid( id = 'main-content',
                   
                   # Include external dependencies
                   
-                  # startup_overlay_div(5000,7000),
+                  startup_overlay_div(5000,7000),
                   slide_panel_ui('main1'),
                   tags$head(
                     tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"),

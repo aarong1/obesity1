@@ -71,20 +71,19 @@ initial_time_zero_population <- read.fst('3_pre_main/intermediate_populations/in
 base_population_w_physiological_and_modifiable_risk_factors <- read.fst('3_pre_main/intermediate_populations/base_population_w_physiological_and_modifiable_risk_factors.fst')
 
 
-download.file(
-  "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population_w_deaths.fst",
-  destfile = "./3_pre_main/intermediate_populations/time_one_population_w_deaths.fst",
-  mode = "wb"
-)
+# download.file(
+#   "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population_w_deaths.fst",
+#   destfile = "./3_pre_main/intermediate_populations/time_one_population_w_deaths.fst",
+#   mode = "wb"
+# )
+# time_one_population_w_deaths <- read.fst('3_pre_main/intermediate_populations/time_one_population_w_deaths.fst')
 
-time_one_population_w_deaths <- read.fst('3_pre_main/intermediate_populations/time_one_population_w_deaths.fst')
 
-
-download.file(
-  "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population.fst",
-  destfile = "./3_pre_main/intermediate_populations/time_one_population.fst",
-  mode = "wb"
-)
+# download.file(
+#   "https://storage.googleapis.com/time_one_population_w_deaths/populations/time_one_population.fst",
+#   destfile = "./3_pre_main/intermediate_populations/time_one_population.fst",
+#   mode = "wb"
+# )
  
 past_populations <- read.fst('./3_pre_main/intermediate_populations/time_one_population.fst')
 
@@ -197,7 +196,7 @@ pop <- pop %>%
 
 # load( file = "data/csv_pts_wgs84.RData") #csv_pts_wgs84
 # print(paste('running','pages_prep.R'));source('pages_prep.R')
-# print(paste('running','bed_days_estimate.R'));source("bed_days_estimate.R")
+print(paste('running','bed_days_estimate.R'));source("bed_days_estimate.R")
 # print(paste('running','obesity_causes.R'));source('obesity_causes.R')
 # print(paste('running','comorbidity.R'));source('comorbidity.R')
 # print(paste('running','risk_stratification.R'));source('risk_stratification.R')
