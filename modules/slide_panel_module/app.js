@@ -2,7 +2,7 @@
 
 // Initialize Quill editor 
 
-  const quill = new Quill("#editor", {
+  const quill = new Quill("#main1-editor", {
     theme: "bubble"
   });
 

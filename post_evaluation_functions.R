@@ -270,9 +270,9 @@ bed_days_fn <- function(past_populations,group_vars = as.character(), year_cut_o
               emergency_admissions_per_case = i.emergency_admissions_per_case)
   ] 
   
-  res_dt[, `:=`(bed_days = bed_days_per_case*prevalence*model_specification$population$scale_down_factor, 
-                admissions = admissions_per_case*prevalence*model_specification$population$scale_down_factor, 
-                emergency_admissions = emergency_admissions_per_case*prevalence*model_specification$population$scale_down_factor)]
+  res_dt[, `:=`(bed_days = bed_days_per_case*prevalence , 
+                admissions = admissions_per_case*prevalence , 
+                emergency_admissions = emergency_admissions_per_case*prevalence )]
   return(res_dt)
 }
 
@@ -451,6 +451,7 @@ daly_yld_fn <- function(past_populations, group_vars= as.character(), year_cut_o
     dw = c( 0.118,0.124,0.049,0.051,0.043,0.150, 0.000,0.073,0.477, 0.201,0.451,0.100,0.200, 0.288, 0.035,0.230,0.165, 0.263,0.040,0.300,0.420, 0.380,0.320,0.540,0.240, 0.360,0.310
     )
   )
+  
   isCost <- past_populations %>% 
     select(
       c(

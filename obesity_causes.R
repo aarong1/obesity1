@@ -62,32 +62,31 @@ metric_cards_parks <- metric_card(633,'Parks and Green Spaces','NI',
 
 metric_cards_fast_food <- metric_card(890,'NI','Fast Food Outlets',color = 'mediumseagreen')
 
+dat <- reduced_pop |>
+        mutate(qrisk_percentile = rank(qrisk_score)/max(rank(qrisk_score))) %>% 
+      slice_sample(n = 500)
 
-
-
-# browsable(metric_cards_parks)
-
-# var map = L.map('custom_map1').setView([51.505, -0.09], 13);
-
-# dat <- reduced_pop|>
-#       slice_sample(n = 500)
-# 
-#     dat |>
-#       filter(age>25) |>
-#       filter(!is.na(bmi)) |>
-#       group_by(bmi) |>
-#       e_charts(height=290) |>
-#       e_density(qrisk_percentile,breaks=5) |>
-# 
-#       e_mark_line(title = 'Baseline',
-#                   data = list(
-#                     type = "average",
-#                     name = "Average"
-#                   )) |>
-#       e_theme('walden')
+    dat |>
+      filter(age>25) |>
+      filter(!is.na(bmi)) |>
+      group_by(bmi) |>
+      e_charts(bmi,height=290,reorder=F) |>
+      e_scatter(qrisk_percentile,breaks=5) |>
+      e_x_axis(jitter=70, jitterOverlap=FALSE) |>
+      e_mark_line(#title = 'Baseline',
+                  data = list(
+                    type = "average",
+                    name = "Average"
+                  )) |>
+      e_y_axis(min=0,max=1,formatter = htmlwidgets::JS("function(v){return (v*100)+'%';}")) |>
+      e_tooltip(formatter = e_tooltip_item_formatter('percent') ) %>% 
+      e_theme('walden')
 
       
       
       
-      
-  #     e_theme('walden')
+    save(list = c('metric_cards_parks1',
+                  'metric_cards_parks',
+                  'metric_cards_fast_food'),
+         file = './preprocess/obesity_causes.RData')
+  

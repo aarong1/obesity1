@@ -18,6 +18,12 @@ slide_panel_ui <- function(id,
                           editor_height = "80%",
                           panel_width = 300) {
   
+  addResourcePath(prefix = 'spm',
+                  directoryPath =  './modules/slide_panel_module/' )
+  
+  print(resourcePaths())
+  
+  
   ns <- shiny::NS(id)
   
   # Generate CSS with dynamic panel width
@@ -76,12 +82,12 @@ slide_panel_ui <- function(id,
   
   shiny::tagList(
         tags$head(
-      tags$script(src = "js/app.js"),
-      tags$script(src = "js/clipboard.js"),
-      tags$script(src = "js/save_quill_contents.js"),
+      tags$script(src = "spm/app.js"),
+      tags$script(src = "spm/clipboard.js"),
+      tags$script(src = "spm/save_quill_contents.js"),
       
       HTML('<script src="
-https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.min.js
+https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.min.js  
 "></script>
 <link href="
 https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.bubble.min.css

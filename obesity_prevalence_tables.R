@@ -264,3 +264,5 @@ dep = colDef(show = FALSE) # hide original
 )
 ) #%>% page_fluid()
 
+save(formatted_table, file = './preprocess/obesity_prevalence_tables.RData')
+

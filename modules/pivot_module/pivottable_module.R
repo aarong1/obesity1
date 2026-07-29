@@ -327,6 +327,7 @@ pivot_module_ui <- function(id,
             var src = ev.relatedTarget.parentElement;
             if (src && src.classList.contains("drop-zone")){
               src.removeChild(ev.relatedTarget);
+              
             }
           }
           updateInputs(getIdMap());
@@ -509,7 +510,7 @@ pivot_module_ui <- function(id,
         ), 
     
     shiny::br(),
-    #tableOutput(ns('tbl')),
+    tableOutput('tbl'),
     
     div(class = 'd-flex justify-content-end mb-3',
           shiny::downloadButton(ns("download_csv"), "Download CSV", 
@@ -524,6 +525,9 @@ pivot_module_ui <- function(id,
 #' @return A reactive expression with the current pivoted data
 pivot_module_server <- function(id, data) {
   shiny::moduleServer(id, function(input, output, session) {
+    
+    ns <- session$ns
+    
     # Support both reactive and non-reactive data inputs
     data_rx <- if (shiny::is.reactive(data)) data else shiny::reactive(data)
 
@@ -546,7 +550,7 @@ pivot_module_server <- function(id, data) {
 
     # Refresh column pool for JS when data changes, and send column types
     shiny::observe({
-      print( data_rx() )
+      # print( data_rx() )
       shiny::req(data_rx())
       cols <- names(data_rx())
       types <- vapply(data_rx(), function(x) if (is.numeric(x)) 'numeric' else 'categorical', character(1))
@@ -587,26 +591,41 @@ pivot_module_server <- function(id, data) {
       if (length(result) > 0) result else NULL
     }
 
-    pivoted <- shiny::reactive({
-      shiny::req(data_rx())
-      #req(input$groups)
+    pivoted <- shiny::reactiveVal(NULL)
+    
+    shiny::observe({
+      print(input$groups)
       
-      wb <- if (nzchar(input$wide_by %||% NULL)) input$wide_by else NULL
+      shiny::req(data_rx())
+      req(input$groups)
+      print(input$wide_by)
+      print(input$values)
+      # print(names(data_rx()))
+      print(data_rx()[1:5,1:5])
+      
+      
+      # wb <- if (nzchar(input$wide_by %||% NULL)) input$wide_by else NULL
+      
+      wb <- if (length(input$wide_by) ==0 ) input$wide_by else NULL
+      
       
       # Check if we have value-function pairs, use them if available
       value_func_mapping <- parse_value_func_pairs(input$value_func_pairs)
       print(value_func_mapping)
+      
       if (!is.null(value_func_mapping)) {
         # Use the new value_funs parameter
-        pivot_agg(
+          print('if')
+        x <- pivot_agg(
           data_rx(),
           groups = c(input$groups, wb) %||% character(),
           value_funs = value_func_mapping,
           wide_by = wb
         )
       } else {
+        print('else')
         # Fall back to original behavior
-        pivot_agg(
+        x <- pivot_agg(
           data_rx(),
           groups = c(input$groups, wb) %||% character(),
           values = input$values %||% character(),
@@ -614,22 +633,33 @@ pivot_module_server <- function(id, data) {
           wide_by = wb
         )
       }
+      # print(pivot_agg(
+      #   data_rx(),
+      #   groups = c(input$groups, wb) %||% character(),
+      #   values = input$values %||% character(),
+      #   funs   = input$funs %||% 'mean',
+      #   wide_by = wb
+      # ))
+      
+      # print(x)
+      pivoted(x)
+      # print(pivoted())
+      # print(pivoted)
+      
     })
     
-    # output$tbl <- renderTable ({
-    #   
-    #   shiny::req(pivoted())
-    #   print(pivoted())
-    #   pivoted()
-    # })
-    
-    output$retbl <- renderReactable ({
+    output$tbl <- renderTable ({
+
+      # shiny::req(pivoted())
       print(pivoted())
-      req(pivoted(),
-          cancelOutput = TRUE)
-      
-      #print(pivoted())
-      reactable(pivoted())
+      pivoted()
+    })
+    
+    output$retbl <- renderReactable({
+      print('in table')
+      print(pivoted())
+      # shiny::req(pivoted(), cancelOutput = TRUE)
+      reactable::reactable(as.data.frame(pivoted()))
     })
     
     # Download handler
@@ -644,7 +674,9 @@ pivot_module_server <- function(id, data) {
     )
    
     # Return reactive
-    return(pivoted)
+    return( 
+      reactive({ pivoted() }) 
+      )
   })
 }
 

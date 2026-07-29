@@ -33,7 +33,7 @@ tags$div(id = "startup-overlay",
 .progress1 {
     width: 0;
     height: 100%;
-    background-color: rgb(122,236,244);
+    background-color: rgb(122,326,111);
     animation: fill1 2s ease 3s 1 forwards;
     z-index:1001;
 }
@@ -98,11 +98,17 @@ style = "
     justify-content: center;
     align-items: center;
     z-index: 10040;
-  ", div(style = 'overflow:hidden; background-color:rgb(122,236,244);margin:0px;border-radius:15px;height:100%;width:100%;display:flex;justify-content:center;align-items:center;flex-direction:column;',
-              
+  ", div(style = 'overflow:hidden; background-color:rgb(122,326,111);margin:0px;border-radius:15px;    
+    top: 2%; /*110px*/
+    left: 2%;
+    width: 96%;
+    height: 96%;
+         display:flex;justify-content:center;align-items:center;flex-direction:column;',
+              #    background-color: rgb(122,236,244);
+
          
          button_block(border = 'white',
-                      div(class = 'hello','Population Health Modelling')
+                      div(class = 'hello','Population Health Modelling', h5(class= 'd-inline  text-light','Obesity'))
                       ),
          #div(style='display:block;position:absolute;justify-content:start;top:50px;left:50px;gap:20px;',
               #img(style= '',src = 'img/pha_logo_0.png', width = '120px;'),

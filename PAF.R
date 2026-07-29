@@ -95,9 +95,12 @@ paf_bmi <-  xy %>%
   e_grid(bottom='20%') %>% 
   e_flip_coords() %>% 
   e_axis( axis = 'x', formatter = e_axis_formatter('percent')) %>% 
+  e_aria(enabled = T, decal = list(show = TRUE)) %>%
+  
   e_theme('azul')  %>% 
   
-  e_tooltip(backgroundColor = 'white')
+  e_tooltip(backgroundColor = 'white',
+            formatter=e_tooltip_item_formatter('percent'))
 
 
 # Same PAF metric, grouped by broad disease and colored by disease type
@@ -110,10 +113,11 @@ absf_bmi <- xy %>%
   e_bar(diff, stack = 'd', bind = disease_pretty,endLabel = list(show = T)) %>%
   e_flip_coords() %>% 
   e_grid(bottom='20%') %>% 
+  e_aria(enabled = T, decal = list(show = TRUE)) %>%
   e_theme('azul')  %>% 
   
   # e_labels() %>% 
-  e_tooltip(backgroundColor = 'white')
+  e_tooltip(backgroundColor = 'white',formatter = e_tooltip_item_formatter('decimal',digits=0))
 
 #smoking ----
 

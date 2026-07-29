@@ -107,6 +107,7 @@ custom_series <- list(list(
 # --- 3. Final Render ---
 adv_echarts <- e_charts() %>% 
   e_list(list(
+    emphasis = list(focus = 'series'),
     tooltip = list(trigger = "axis"),
     legend = list(data = c(quintile_cols, "Trend"), top = 20),
     xAxis = list(type = "category", data = plot_data$HSCT),

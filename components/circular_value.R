@@ -5,7 +5,7 @@ library(bslib)
 'red' #ff4741
 
 
-circular_value <- function(value=15e3){
+circular_value <- function(value=15e3,col = 'default'){
 
 labels = c('below cost effective', 
   'lower threshold cost effective',

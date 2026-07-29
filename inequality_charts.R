@@ -1,12 +1,12 @@
 # x <- pop %>%
-#   count(age20,mdm_quintile_soa = as.numeric(mdm_quintile_soa),bmi) %>% 
+#   count(age20,mdm_quintile_soa = as.numeric(mdm_quintile_soa),bmi) %>%
 #   mutate(n=n * model_specification$population$scale_down_factor) %>%
-#   filter(!is.na(age20)) %>% 
-#   filter(bmi=='obese') %>% 
-#   group_by(age20) %>% 
-#   e_charts(mdm_quintile_soa) %>% 
-#   e_line(n) %>% 
-#   e_lm(n~mdm_quintile_soa) %>% 
+#   filter(!is.na(age20)) %>%
+#   filter(bmi=='obese') %>%
+#   group_by(age20) %>%
+#   e_charts(mdm_quintile_soa) %>%
+#   e_line(n) %>%
+#   e_lm(n~mdm_quintile_soa) %>%
 #   e_theme('infographic')
 
 pop %>%
@@ -40,8 +40,10 @@ pop %>%
 0.3376226 - 0.3175548
 0.2620425 - 0.2136568 
 
-metric_card(top = '0.2', 'Prevalence Most and Least Deprived Quintile','Inequality in Overweight', color='lightcoral') %>%page_fluid() %>% browsable()
-metric_card(top = '0.2', '4','Inequality in Obesity', color='lightcoral')
+metric_card(top = '2.0%', 'Prevalence Most and Least Deprived Quintile','Inequality in Overweight', color='lightcoral') 
+metric_card(top = '4.8%', '','Inequality in Obesity', color='lightcoral')
+
+# %>%page_fluid() %>% browsable()
 
 (
 obese_inequality_chart <- pop %>%
@@ -65,14 +67,19 @@ obese_inequality_chart <- pop %>%
   
   group_by(age20) %>% 
   mutate(per=n/tot) %>% 
-  e_charts(mdm_quintile_soa_name) %>% 
-  e_line(per) %>% 
+  e_charts(mdm_quintile_soa_name,
+           emphaisis = list(focus = 'self')) %>% 
+    e_tooltip(backgroundColor = 'white',
+              formatter = e_tooltip_item_formatter('percent')) %>%
+  e_line(per, symbol='none') %>% 
   e_scatter(per, symbol='circle', symbol_size = 15) %>%
   e_scatter(per,symbol='square') %>% 
   e_theme('azul')%>% 
   e_axis( axis = 'y', formatter = e_axis_formatter('percent')) %>% 
-    e_tooltip(backgroundColor = 'white')
+    e_axis( axis = 'x', name = 'end quintile')  
+    
 )
+
 (
 overweight_inequality_chart <- pop %>%
   mutate(mdm_quintile_soa_name = factor(mdm_quintile_soa_name,
@@ -95,13 +102,16 @@ overweight_inequality_chart <- pop %>%
   
   group_by(age20) %>% 
   mutate(per=n/tot) %>% 
-  e_charts(mdm_quintile_soa_name) %>% 
-  e_line(per) %>% 
+  e_charts(mdm_quintile_soa_name,
+             emphaisis = list(focus = 'self')) %>% 
+    
+    e_line(per, symbol='none') %>% 
   e_scatter(per, symbol='circle', symbol_size = 15) %>%
-  e_scatter(per,symbol='square') %>% 
   e_theme('azul')%>% 
   e_axis( axis = 'y', formatter = e_axis_formatter('percent')) %>% 
-    e_tooltip(backgroundColor = 'white')
+    e_axis( axis = 'x', name = 'end quintile')  %>% 
+    e_tooltip(backgroundColor = 'white',
+              formatter = e_tooltip_item_formatter('percent'))
 )
 
 
@@ -130,13 +140,26 @@ inequality_chart <-pop %>%
   filter(!is.na(diff)) %>%
   ungroup() %>% 
   group_by(bmi) %>% 
-  e_charts(age20) %>% 
-  e_line(diff) %>% 
+  e_charts(age20,emphasis = list(focus = 'self')) %>% 
+  e_line(diff,symbol='none') %>% 
   e_scatter(diff,symbol='square') %>% 
   e_theme('azul')  %>% 
   e_scatter(diff, symbol='circle', symbol_size = 15) %>%
   e_axis( axis = 'y', formatter = e_axis_formatter('percent'))  %>% 
-  e_tooltip(backgroundColor = 'white')
+    e_axis( axis = 'x', name = 'age')  %>% 
+    
+  e_tooltip(backgroundColor = 'white',
+            formatter = e_tooltip_item_formatter('percent', digits = 1))
 
 )
+
+
+
+
+save(list = c(
+  'obese_inequality_chart',
+  'overweight_inequality_chart',
+  'inequality_chart'
+),
+file = './preprocess/inequality_charts.RData')
 

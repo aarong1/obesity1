@@ -14,6 +14,7 @@ symbols = c(
 bmi_sex_df <- pop |> 
   filter(!is.na(bmi)) |> 
   count(bmi=bmi%in% c('obese','overweight'),sex) |> 
+  mutate(n=n * pop_scale_up) %>% 
   #pivot_wider(names_from = sex,values_from = n) |> 
   filter(bmi==TRUE) |> 
   mutate(x = c( 0.5, 1.5)) |>
@@ -37,7 +38,7 @@ overweight_obese_sex <- bmi_sex_df |>
   e_pictorial(name = c('Male','Female'),n, symbol = symbols, 
               barCategoryGap = "50%", legend = T,
               itemStyle = style) |> 
-    e_visual_map(n, show = F) |>
+    # e_visual_map(n, show = T) |>
     e_labels(formatter = '{c}') |> 
   # e_data(females_bmi_sex_df) |> 
   # e_pictorial(name = 'Females',Females, symbol = symbols[2], 
@@ -69,11 +70,11 @@ overweight_obese_sex <- bmi_sex_df |>
   ) |>
   e_legend() |> 
   e_tooltip()  %>% 
-    e_grid(containLabel = T,left='15%'))|> 
+    e_grid(containLabel = T,left='15%') |> 
   # e_title("SVG path") |> 
   # e_theme_custom("westeros", th) |>
    e_theme('roma')
-
+)
 
 
 
@@ -109,6 +110,7 @@ BMI_parallel_chart <- reduced_pop |>
   
   # e_title("BMI Chart with contributing and adjacent characteristics") |> 
   e_theme('roma') %>% 
+    e_brush() %>% 
   e_grid(containLabel = T))
 
 
@@ -184,6 +186,8 @@ slope_chart_age_deprivation <- pop %>%
 
 bmi_sya_age <- pop |> 
   count(bmi,age) |>  #=as.character(age)
+  mutate(n = n * pop_scale_up) |> 
+  mutate(age = as.character(age)) |> 
   filter(!is.na(bmi)) |> 
   # filter(age>20,age<90) |>
   pivot_wider(names_from = bmi, values_from = n) |>
@@ -248,11 +252,13 @@ st_write(trusts1,'./data/trusts.geojson', append = FALSE)
 trusts_json <- jsonlite::read_json("./data/trusts.geojson")
 object.size(trusts_json)
 
-
 trusts_df <- pop |> 
   add_count(HSCT,name='trust_pop') |> 
   count(HSCT,trust_pop,overweight=bmi%in%c('obese','overweight')) |> 
   filter(overweight == T) |> 
+  mutate(trust_pop = trust_pop *model_specification$population$scale_down_factor,
+         n = n*model_specification$population$scale_down_factor
+         ) |> 
   rename(c( 'TrustName' = 'HSCT')) |> 
   mutate(Name = sort(trusts1$TrustName))
 
@@ -322,7 +328,7 @@ trust_bar <-
     e_charts(TrustName,emphasis = list(focus = 'self'),
              reorder = FALSE) %>%
     e_map_register("custom_map", trusts_json) |> 
-      e_visual_map(n, show = T) |> 
+      e_visual_map(n, show = F) |> 
       e_theme('roma') |> 
     e_map(universalTransition = TRUE,
           animationDurationUpdate = 5000L,
@@ -333,6 +339,7 @@ trust_bar <-
           map = "custom_map",
           itemStyle=list( borderColor='white'))
 )
+
 
 
 # data.frame(lon=1,lat=1,value = 10) |>
@@ -540,56 +547,175 @@ trusts_map
 # x <- pop |>
 #   count(HSCT=first(HSCT),DEA2014_name=first(DEA2014_name),soa_name)
 # 
-x0 <- pop |>
-  count(item = HSCT, parent = 'NI', name='value')
-# 
-x1 <- pop |>
-  count(parent = HSCT, item = DEA2014_name, name='value')
-# 
-x2 <- pop |>
-  count(parent = DEA2014_name, item = Urban_mixed_rural_status, name='value')
-# 
-# 
-x2 <- pop |>
-  group_by(item = soa_name) |>
+
+xx0 <- pop |>
+  group_by(item = HSCT) %>% 
+  summarise(parent = 'NI', 
+            value = sum(bmi%in% c('overweight','obese'))/n(),
+            )  %>% 
+  add_count(parent,wt = value,name='tot') %>% 
+  mutate(value = value/tot) %>% 
+  select(-tot)
+
+xx1 <- pop |>
+  group_by(item = DEA2014_name) %>% 
+  summarise(  parent = first(HSCT),value = sum(bmi%in% c('overweight','obese'))/n()
+              ) %>% 
+  add_count(parent,wt = value,name='tot') %>% 
+  mutate(value = value/tot) %>% 
+  select(-tot)
+  
+
+xx2 <- pop |>
+  group_by( item = sdz_name) |>
            summarise( parent = first(DEA2014_name),
-                      #obese = sum(bmi %in% c('obese','overweight')),
-                                  value = n())
-  # count(item) |>
-  # filter(n>1)
+                      value = sum(bmi %in% c('obese','overweight'))/n() )  %>% 
+  add_count(parent,wt = value,name='tot') %>% 
+  mutate(value = value/tot) %>% 
+  select(-tot)
+
+xni <- pop %>% summarise(item = "NI",  parent = '',value = sum(bmi%in% c('overweight','obese'))/n()) 
+
+xx_normalised <- rbind(
+xni,
+xx0,
+xx1,
+xx2 %>% arrange(desc(value)) %>% head(20)
+) %>% select(parent,item,value)
 # 
-xx <- rbind(
-data.frame(item = "NI",  parent = '', value = 1),
-x0,
-x1,
-x2[1:400,]
-)
-# 
-geo <- data.tree::FromDataFrameNetwork(xx)
+
+geo_normalised <- data.tree::FromDataFrameNetwork(xx_normalised)
 # 
 # #add decal
 # 
-geo_sunburst <- geo |>
-  e_charts(height = '100%', width = '100%') |>
-  e_sunburst() |>
-  e_theme('roma') |>
-  e_labels(show = FALSE) |>
-  e_tooltip() %>%
-  e_visual_map(min=0,max=max(xx$value) )|>
-  e_grid(left='15%',  containLabel = T )
+# (
+# geo_sunburst <- geo_normalised |>
+#   e_charts(value#height = '100%', width = '100%'
+#            ) |>
+#   e_sunburst() |>
+#   e_theme('roma') |>
+#   e_labels(show = FALSE) |>
+#   e_tooltip(formatter = e_tooltip_pie_formatter('percent',digits=1)) %>%
+#   e_visual_map( min=min(xx_normalised$value),max=max(xx_normalised$value) )|>
+#     # e_aria(enabled = T,
+#     #        decal = list(show =T)) %>% 
+#   e_grid(left='15%',  containLabel = F )
+# )
 # 
-# 
-# # geo <- data.tree::FromDataFrameNetwork(xx)
-# 
-geo_treemap <- geo |>
-  e_charts(height = '100%', width = '100%') |>
-  e_treemap(roam=F ,upperLabel = list(show=F),
+# (
+#   geo_treemap <- geo_normalised |>
+#     e_charts(x = value#height = '100%', width = '100%'
+#     ) |>
+#     e_treemap(roam=F , 
+#               upperLabel = list(show=T),
+#               leafDepth = 2) |>
+#     e_theme('roma')  |>
+#     e_labels(show = T, position='insidetop') |>
+#     e_tooltip(formatter = e_tooltip_pie_formatter('percent',digits=1)) %>%
+#     e_tooltip(formatter= '{a}{b}{c}{d}{e}') %>% 
+#     e_visual_map( min=min(xx_normalised$value),max=max(xx_normalised$value) )|>
+#     e_aria(enabled = T,
+#            decal = list(show =T)) %>%
+#     e_grid(left='15%',  containLabel = F )
+# )
+########################################################################################
+########################################################################################
+
+x0 <- pop |>
+  group_by(item = HSCT) %>% 
+  summarise(parent = 'NI', 
+            value = sum(bmi%in% c('overweight','obese')),
+  )%>% 
+  mutate(value = value * pop_scale_up)
+
+x1 <- pop |>
+  group_by(item = DEA2014_name) %>% 
+  summarise(  parent = first(HSCT),
+              value = sum(bmi%in% c('overweight','obese'))
+  ) %>% 
+  mutate(value = value * pop_scale_up)
+
+x2 <- pop |>
+  group_by(item = soa_name) |>
+  summarise( parent = first(DEA2014_name), 
+    value = sum(bmi %in% c('obese','overweight')) ) %>% 
+  mutate(value = value * pop_scale_up)
+
+x3 <- pop |>
+  group_by( item = sa_code) |>
+  summarise(  parent = first(soa_name),
+    value = sum(bmi %in% c('obese','overweight')) ) %>% 
+  mutate(value = value * pop_scale_up)
+
+ni <- pop %>% summarise(  item = "NI", parent = '',value = sum(bmi%in% c('overweight','obese'))) %>% 
+  mutate(value = value * pop_scale_up)
+
+xx_count <- rbind(
+  ni,
+  x0,
+  x1,#[1:20,],
+  x2[1:500,]
+  # x3[1:20,]
+  )
+
+geo_count <- data.tree::FromDataFrameNetwork(xx_count)
+
+(
+geo_treemap <- geo_count |>
+  e_charts(
+     height = '100%', width = '100%'
+    ) |>
+  e_treemap(roam=F , 
+            upperLabel = list(show=T),
             leafDepth = 1) |>
   e_theme('roma')  |>
-e_labels(show = T, position='insidetop') |>
+  e_labels(show = T, position='insidetop') |>
   e_tooltip() %>%
-  e_visual_map(min=0,max=max(xx$value) )|>
-  e_grid(left='15%',  containLabel = T )
+  e_visual_map(left=0,
+               min=min(xx_count$value), 
+               max=sort(xx_count$value,decreasing = T)[2])|>
+  e_grid(left='25%',  containLabel = F )
+  )
+
+
+(
+  geo_sunburst <- geo_count |>
+    e_charts(emphasis = list(focus = 'relative'),
+      height = '100%', width = '100%'
+    ) |>
+    e_sunburst(roam=F , 
+              upperLabel = list(show=T),
+              leafDepth = 1) |>
+    e_theme('roma')  |>
+    e_labels(show = F, position='insidetop') |>
+    e_tooltip() %>%
+    e_visual_map(left=0,
+                 min=min(xx_count$value), 
+                 max=sort(xx_count$value,decreasing = T)[2])|>
+    e_grid(left='5%',  containLabel = F )
+)
+
+
+
+
+
+save(list = c(
+  'geo_sunburst',
+  'geo_treemap',
+  'overweight_obese_sex',
+  'BMI_parallel_chart',
+  'slope_chart',
+  'slope_chart_age_deprivation',
+  'slope_chart_age_sex',
+  'bmi_sya_age',
+  'deprivation_sya_age',
+  'trust_bar',
+  'trusts_map',
+  'bar_map_morph',
+  'lrg_leaflet'
+  ),
+  file = './preprocess/infographics.RData')
+
 # 
 # universe <- data.tree::FromDataFrameNetwork(hier)
 # 

@@ -12,20 +12,22 @@ library(qs)
 library(readxl)
 library(tidyverse)
 library(sf)
+
+dot <- function(col){
+  div(style=paste0('display:inline-block;background:',col,';border-radius:50%;height:10px;width:10px;'),'')
+}
+
 # load(".RData")
 
-
+source('app_prep.R')
 source('global.R')
 source('1_2_utils/main_configuration.R')
-
-# costs <- calculate_costs_fn(as.data.table(past_populations))
-# lost_productivity_sickness <- sick_days_fn(as.data.table(past_populations))
-# hospital_pressures <- bed_days_fn(as.data.table(past_populations))
 
 print(paste('running','/intervention_module.R')); source('modules/intervention_module/intervention_module.R')
 print(paste('running','/progress_pair_module.R')); source('modules/progress_pair_module/progress_pair_module.R')
 print(paste('running','/specificInterventionModule_3.R'));source('./modules/specificInterventionModule_3.R')
 print(paste('running','/chart_update_module.R')); source('modules/chart_update_module_4/chart_update_module.R')
+source('./modules/slide_panel_module/slide_panel_module.R')
 
 # initial_time_zero_population <- first_population
 
@@ -41,8 +43,7 @@ source('./components/rag_line.R')
 
 source('./components/model_registry_list.R')
 source('./scenarios_div.R')
-
-
+source('./components/sticky_side_bar.R')
 
 source('./obesity_intervention/engine_bmi.R')
 source('./post_evaluation_functions.R')
@@ -50,16 +51,12 @@ source('./post_evaluation_functions.R')
 print(paste('running','/advanced_e_charts_trend.R')); source('./advanced_e_charts_trend.R')
 print(paste('running','/pivottable.R')); source('modules/pivot_module/pivottable.R')
 print(paste('running','/pivottable_module.R'));source('modules/pivot_module/pivottable_module.R')
+source('./pivot_columns.R')
 
+source('./6_post_main/post_evaluation_module/bed_days_estimator.R')
+source('./6_post_main/post_evaluation_module/lost_productivity_estimator.R')
 
-# #
-# lapply(
-#   list.files("./components", include.dirs = F,full.names = TRUE,all.files = F,recursive = F, no.. = TRUE)[
-#     grepl("\\.R$", basename(list.files(include.dirs = F,"./components")))
-#   ],
-#   function(x){print(x);source(x)}
-# )
-
+# source('./components/sticky_side_bar.R')
 
 graph_wrapper <- function(..., header =NULL){
   
@@ -76,7 +73,7 @@ graph_wrapper <- function(..., header =NULL){
   )
 }
 
-# theme_x <- readLines('theme.json')
+
 
 ui <- page_fluid( id = 'main-content',
                   theme = bs_theme(version = 5, font_scale = 0.8,
@@ -85,8 +82,9 @@ ui <- page_fluid( id = 'main-content',
                   #e_theme_register(paste0(theme_x,collapse =""), name = "myTheme"),
                   
                   # Include external dependencies
-                  startup_overlay_div(5000,7000),
                   
+                  # startup_overlay_div(5000,7000),
+                  slide_panel_ui('main1'),
                   tags$head(
                     tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"),
                     tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"),
@@ -172,6 +170,10 @@ ui <- page_fluid( id = 'main-content',
                           ),
                           div(class = "nav-item",
                               # span(class = "nav-icon"),
+                              "INT (Neighhbourhood)"
+                          ),
+                          div(class = "nav-item",
+                              # span(class = "nav-icon"),
                               "Lifestyle"
                           ),
                           div(class = "nav-item",
@@ -204,7 +206,7 @@ ui <- page_fluid( id = 'main-content',
                       div(class = "content-area",
                           # div( class="tab-pane active", id="overview", role="tabpanel", `aria-labelledby`="overview",
                           
-                          div(class = " vw-80 tab-content",
+                          div(id = 'main-tab-area', class = " vw-80 tab-content",
                               
                               # Dashboard Tab Content
                               # dashboard-tab -----
@@ -218,34 +220,39 @@ ui <- page_fluid( id = 'main-content',
                                                
                                                # Dashboard Tab Content (default active)
                                                div(id = "gri", class = "grid1",
-                                                   div(class = 'd-flex flex-wrap',
+                                                   div(class = 'd-flex flex-row gap-3 flex-nowrap align-items-center',
+                                                       div(style = 'width:300px;height:200px',
+                                                           bmi_pie),
                                                    
-                                                   metic_card_prev_total_obesity,
-                                                   metric_card_total_bed_days,
-                                                   metric_card_total_episodes,
-                                                   metric_card_total_deaths_obesity,
-                                                   metric_card_YLL_total,
-                                                   metic_card_daly_total_obesity,
-                                                   metic_card_yld_total_obesity,
-                                                   metic_card_prev_cancer_obesity,
-                                                   metric_card_costs_total_obesity,
+                                                  #  metic_card_prev_total_obesity,
+                                                  #  metric_card_total_bed_days,
+                                                  #  metric_card_total_episodes,
+                                                  #  metric_card_total_deaths_obesity,
+                                                  #  metric_card_YLL_total,
+                                                  #  metic_card_daly_total_obesity,
+                                                  #  metic_card_yld_total_obesity,
+                                                  #  metic_card_prev_cancer_obesity,
+                                                  #  metric_card_costs_total_obesity,
                                                   # div(class = "grid-item ",
+                                                  
+
+                                                  
                                                        div(class = "h-100 grid-item nav-card analytics bg-opacity-50",
-                                                           div(onclick = "$('.tab-pane').removeClass('active show');$('#' + 'analytics-tab').addClass('active show')",
+                                                           div(onclick = "$('#dashboard-tab').removeClass('active');$('#analytics-tab').addClass(' active');var map = $('#mymap').data('leaflet-map');map.invalidateSize();",
                                                                class = "nav-card-icon",
                                                                icon("arrow-up-right-from-square")),
-                                                           div(class = "nav-card-title", "Morbidity"),
+                                                           div(class = "nav-card-title", "Analytics"),
                                                            div(class = "nav-card-description", "View detailed analytics"),
                                                        ),
                                                        div(class = "h-100 grid-item nav-card settings bg-opacity-50",
-                                                           div(onclick = "$('.tab-pane').removeClass('active show');$('#' + 'geography-tab').addClass('active show')",
+                                                           div(onclick = "$('#dashboard-tab').removeClass('active');$('#geography-tab').addClass(' active')",
                                                                class = "nav-card-icon",
                                                                icon("arrow-up-right-from-square")),
                                                            div(class = "nav-card-title", "Geography"),
                                                            div(class = "nav-card-description", "View detailed analytics"),
                                                        ),
                                                        div(class = "h-100 grid-item nav-card reports bg-opacity-50",
-                                                           div(onclick = "$('.tab-pane').removeClass('active show');$('#' + 'deprivation-tab').addClass('active show')",
+                                                           div(onclick = "$('#dashboard-tab').removeClass('active');$('#deprivation-tab').addClass(' active')",
                                                                class = "nav-card-icon",
                                                                icon("arrow-up-right-from-square")),
                                                            div(class = "nav-card-title", "Deprivation"),
@@ -285,7 +292,7 @@ ui <- page_fluid( id = 'main-content',
                                                        div(class = "grid-item-content",
                                                            div(class = "chart-card",
                                                                div(class = "card-header",
-                                                                   "Townsend Material Deprivation "
+                                                                   "# Comorbidities by Deprivation extreme quintileand and BMI "
                                                                ),
                                                                comorbidities_bmi_townsend_extreme
                                                                
@@ -302,7 +309,9 @@ ui <- page_fluid( id = 'main-content',
                                                        div(class = "grid-item-content",
                                                            div(class = "chart-card",
                                                                #no card header
-                                                               
+                                                               div(class = "text-secondary",
+                                                                   "Overweight and Obese "
+                                                               ),
                                                                overweight_obese_sex
                                                            )
                                                        )
@@ -341,7 +350,8 @@ ui <- page_fluid( id = 'main-content',
                                                        div(class = "grid-item-content",
                                                            div(class = "chart-card",
                                                                div(class = "card-header",
-                                                                   "Comorbidities"
+                                                                   "Comorbidities",
+                                                                   span(class= 'text-secondary', 'Number of Long Term Chronic Conditions' )
                                                                ),  comorbidities_plot
                                                            )
                                                        )
@@ -366,7 +376,9 @@ ui <- page_fluid( id = 'main-content',
                                                        div(class = "grid-item-content",
                                                            div(class = "chart-card",
                                                                div(class = "card-header",
-                                                                   "Trust"
+                                                                   "Trust",
+                                                                   tags$small(class=' text-muted','Raw count of overweight and obese')
+                                                                   
                                                                ),  bar_map_morph
                                                            )
                                                        )
@@ -383,7 +395,8 @@ ui <- page_fluid( id = 'main-content',
                                                        div(class = "grid-item-content",
                                                            div(class = "chart-card",
                                                                div(class = "card-header",
-                                                                   "Risk with BMI"
+                                                                   "Ranked Risk by BMI",
+                                                                   tags$small(class=' text-muted','1-yr prob of serious CVD')
                                                                ),  risk_bmi
                                                                
                                                                
@@ -410,7 +423,7 @@ ui <- page_fluid( id = 'main-content',
                                                                div(class = "card-header",
                                                                    tags$i(class = "fas fa-chart-scatter me-2"),
                                                                    
-                                                                   "Risk by BMI Cat",
+                                                                   "Distribution of Risk by BMI",
                                                                    tags$small(class=' text-muted','1-yr prob of serious CVD')
                                                                ),
                                                                # revenue_chart
@@ -441,7 +454,7 @@ ui <- page_fluid( id = 'main-content',
                               # Analytics Tab Content
                               
                               # analytics-tab ----
-                              div(id = "analytics-tab", class = "tab-pane active vh-100", 
+                              div(id = "analytics-tab", class = "tab-pane fade active vh-100", 
                                   # style = "
                                   #           position: fixed;
                                   #           top: 41px;
@@ -618,28 +631,29 @@ ui <- page_fluid( id = 'main-content',
                               
                               # Reports Tab Content
                               #reports-tab -----
-                              div(id = "reports-tab", class = " tab-pane show",# style = "display: none;",
+                              div(id = "reports-tab", class = " tab-pane active show",# style = "display: none;",
                                   div(class = "container-fluid", style = "padding-left: 200px;",
                                       h3("Population Health Data - Interactive Pivot Analysis"),
                                       p(class='lead',"Drag columns to create custom analysis. Use dimensions for grouping, measures for aggregation."),
                                       
                                       help_component(),
+                                      div(style = "font-size: 0.7rem !important;",
                                       
-                                      div(style = "font-size: 0.6rem !important;",
                                           # Pivot module UI
                                           pivot_module_ui("pivot_reports",
-                                                          data_names = c("sex", "age_risk", "county", "hsct", "bmi",
-                                                                         "Urban_status", "mdm_quintile_soa_name", "ethnicity",
-                                                                         "stroke", "chd", "diabetes", "dementia", "heart_failure"),
-                                                          fun_names = c("sum","mean","median","min","max","count","n_distinct")),
+                                                          # data_names = c("sex", "age_risk", "county", "hsct", "bmi",
+                                                          #                "Urban_status", "mdm_quintile_soa_name", "ethnicity",
+                                                          #                "stroke", "chd", "diabetes", "dementia", "heart_failure"),
+                                                          fun_names = c("sum","mean","median","min","max","count","n_distinct")
+                                                          ),
                                           
                                           # Results section
-                                          # div(style = "margin-top: 30px;",
-                                          #     #h4("Pivot Analysis Results"),
-                                          #     div(id = "pivot_reports-table_container",
-                                          #         reactableOutput("pivot_reports-table")
-                                          #     ),
-                                          #     )
+                                          div(style = "margin-top: 30px;",
+                                              #h4("Pivot Analysis Results"),
+                                              div(id = "pivot_reports-table_container",
+                                                  reactableOutput("pivot_reports-table")
+                                              ),
+                                              )
                                       )
                                   )
                               ),
@@ -730,7 +744,7 @@ ui <- page_fluid( id = 'main-content',
                                        p(class = 'lead', " ")
                                   ),
                                   
-                                       div(class = "d-flex flex-row gap-3 justify-content-around", #flex-wrap justify-content-around
+                                       div(class = "d-flex flex-row gap-3 justify-content-around align-items-center", #flex-wrap justify-content-around
                                            div(
                                              div(class = 'pb-5', style = 'height:300px;width:250px;',
                                                     div(class = "card-header text-secondary", 'Age'),
@@ -751,7 +765,7 @@ ui <- page_fluid( id = 'main-content',
                                   
                                   div(class = 'my-5 py-5 alert bg-subtletext-black',
                                       h3("Modifiable Risk"),
-                                      p(class = 'lead', "Modifable with an extended range of modifiabel and physiological risk factors")
+                                      p(class = 'lead', "Modifable with an extended range of modifiable and physiological risk factors")
                                   ),
                                   div(class = "m-5 p-5 d-flex flex-row gap-3 flex-wrap justify-content-start",
                                       #class= 'grid-item border-4 w-75 p-5 m-5',
@@ -872,10 +886,13 @@ ui <- page_fluid( id = 'main-content',
                                       div(class = "rounded-5 bg-light d-flex flex-row gap-3 flex-wrap justify-content-around",
                                           div(style = '', class = 'grid-item p-5 m-5',
                                               div(class = "card-header",# style = "font-size: 0.5em;",
-                                                  'Prevalence of Obesity and Overweight with Deprivation by age',
-                                                  span(class = 'text-bg-secondary',
-                                                       'The gradient is neutral to positive, to varying degrees among age groups')
-                                              ),
+                                                  'The distribution of Risk (CVD) with Age',
+                                                  span(class = 'text-bg-secondary p-1 m-1 rounded-1',
+                                                       'Note Age is the predominant factor in determining risk, yet there is modifiable 
+                                                       variance to the risk per age group determining if an individual is at greater or lesser risk')
+                                              # ),
+     
+                                          ),
                                               risk_prob_density_fn_age10
                                           )
                                       ),
@@ -884,8 +901,10 @@ ui <- page_fluid( id = 'main-content',
                                           div(style = '', class = 'grid-item p-5 m-5',
                                               div(class = "card-header",# style = "font-size: 0.5em;",
                                                   'Prevalence of Obesity and Overweight with Deprivation by age',
-                                                  span(class = 'text-bg-secondary',
-                                                       'The gradient is neutral to positive, to varying degrees among age groups')
+                                                  span(class = 'text-bg-secondary p-1 m-1 rounded-1',
+                                                       'The gradient is neutral to negative, to varying degrees among age groups'),
+                                              tags$small(#class = 'text-bg-secondary',
+                                                'The dynamics of obesity with deprivation become clearer by hovering the legend, or points one by one, left to right.')
                                               ),
                                               deprivation_bmi_age_chart
                                           )
@@ -915,23 +934,41 @@ ui <- page_fluid( id = 'main-content',
                                                         depression_obesity_chart),
                                           # graph_wrapper(pm25g_urban_chart),
                                           
-                                          graph_wrapper(header = 'Environmental Pollution and BMI',
+                                          graph_wrapper(header = span('Environmental Pollution and BMI',
+                                                                      span(class = 'text-muted',
+                                                                    'Propensity for Obesity rises moderately with pollution levels'
+                                                                      )),
                                                         pm25g_bmi_scatter_chart),
                                           
                                           graph_wrapper(header = 'Sleep and BMI',
                                                         sleep_bmi_chart),
                                           
-                                          graph_wrapper(header = '[Reminder] Townsend Disrtibution ',
+                                          graph_wrapper(header = '[Reminder] Townsend Distribution ',
                                                         townsend_distribution_chart),
                                           
-                                          graph_wrapper(header = '[Reminder] Risk Disrtibution ',
+                                          graph_wrapper(header = '[Reminder] Risk Distribution ',
                                                         qrisk_distribution_chart),
                                           
                                           graph_wrapper(header = 'Comorbidities and BMI',
                                                         comorbidities_plot),
                                           
-                                          graph_wrapper(header = '',
+                                          graph_wrapper(header = 'Avg Cambridge Multimorbidity Score with BMI',
+                                                        BMI_cmms_plot
                                                         ),
+                                          
+                                          graph_wrapper(header = span('Modifiable Risk', 
+                                                                      span(class = 'text-secondary',
+                                                                           'Risk factors that are behavioural and can be changed'
+                                                                           )),
+                                                        corisk_modifiable_chart),
+                                          graph_wrapper(header = 'Servere Comorbid Risks',
+                                                        span(class = 'text-secondary',
+                                                             'Minor or mild morbidities that act or signal advanced risk'),
+                                                        comorbid_risk_chart),
+                                          graph_wrapper(header = 'All Risk Correlates',
+                                                        span(class = 'text-secondary',
+                                                             'All contributors to a risk profile'),
+                                                        corisks_chart)
                                           
                                           # graph_wrapper(metric_chart_bmi_age),
                                           # graph_wrapper(metric_chart_bmi_sex),
@@ -941,7 +978,8 @@ ui <- page_fluid( id = 'main-content',
                                       h3(" Socio-economics Analytics"),
                                       p(class = 'lead', "Analysis of Obesity dynamics in the Population and interaction with socio-economics and comorbidity")
                                       ),
-                                      div(class='d-flex flex-row flex-wrap gap-3',# justify-content-between
+                                      
+                                      div(class='d-flex flex-row flex-wrap gap-3 justify-content-evenly',# justify-content-between
                                           
                                           
                                           graph_wrapper(header = 'Income Decile and BMI',
@@ -956,7 +994,7 @@ ui <- page_fluid( id = 'main-content',
                                       
                                       h3(" Comorbidity Analytics"),
                                       p(class = 'lead', "Analysis of Obesity dynamics in the Population and interaction with socio-economics and comorbidity"),
-                                      div(class='d-flex flex-row flex-wrap gap-3',# justify-content-between
+                                      div(class='d-flex flex-row flex-wrap gap-3 justify-content-evenly',# justify-content-between
                                           
                                           
                                           graph_wrapper(header = 'Hypertension and BMI',hypertension_plot),
@@ -985,6 +1023,105 @@ ui <- page_fluid( id = 'main-content',
                                   
                               ),
                               
+                              # INT tab ----
+                              div(id = "int-tab", class = "tab-pane active show", style = " ",
+                                  div(class = "container-fluid",   style = "padding-left: 150px;",
+                                      h3(" Integrated Neighbourhood Team Analytics"),
+                                      p(class='lead', "Drill down on Obesity in the Integrated Neighbourhood Teams - a particular theme of 'left shifting'
+                                        healthcare provision in Northern Ireland. INTs were formly GP Federations and Integrated Care Services"),
+                                      br(),br(),
+                                      # tags$ul(tags$li('Top SOA DEA Settlements'),
+                                      #         # tags$li('Split'),
+                                      #         # tags$li(' Overview'),
+                                      #         # metric_card_costs_total_obesity,
+                                      #         # metric_card_nhs_obesity,
+                                      #         # metric_card_society_obesity,
+                                      # )
+                                      div(class = 'py-3 my-3 d-flex justify-content-center bg-light rounded-5 ', 
+                                      div(class = 'w-50 h-100 rounded-4 bg-white p-2 m-2', 
+                                          
+                                          INT_bmi_geo_matrix)
+                                      ),
+                                      br(),br(),
+                                      
+                                      div(class= 'd-flex flex-column flex-wrap gap-3 justify-content-start pt-3 mt-3',
+                                          div(class = 'h-25',
+                                          div(class= 'd-flex flex-row flex-wrap gap-3 justify-content-start',
+                                              div(class= 'd-flex flex-column flex-wrap gap-3 justify-content-start',
+                                                  
+                                                div(style = 'height:200px;',
+                                                    class = 'border rounded-3',
+                                                    bar_each_bmi_normalised ),
+                                                div(style = 'width:500px;height:500px;', 
+                                                    class = 'border rounded-3', 
+                                                    map_bmi_int )
+                                                ),
+                                              div(class = 'border rounded-3',
+                                              div(class= 'd-flex flex-row flex-wrap gap-3 justify-content-start',
+                                                  
+                                                div(style = 'width:300px;height:450px;', bar_overweight ),
+                                                div(style = 'width:300px;height:450px;', bar_obese )
+                                              ),
+                                                div(style = 'height:250px;', bar_bmi_normalised )
+                                              )
+                                          )
+                                          )
+                                  
+                              ),
+                              
+                              div(class = 'pt-5 mt-5',
+                              h3(" INTs and HSCT distributions"),
+                              p(class='lead', " The distribution of at- risk BMI (overweight or obese) in TRUSTs with averages by INT.
+                                Each component unit is a Super Data Zone.")
+                              ),
+                              br(), br(), br(),
+                              div(class= 'd-flex flex-row flex-wrap gap-1 justify-content-evenly',
+                                  span(class ='text-secondary', 'BMI populations'),
+                                  div(style = 'width:550px;height:400px', federation_bmi_hsct_beeswarm),
+                                  span(class ='text-secondary', 'Deprivation'),
+                                  div(style = 'width:550px;height:400px', federation_town_hsct_beeswarm)
+                              ),
+                              br(), br(), br(),
+                              h3(" Obesity and the Environment"),
+                              p(class='lead', "Look at Obesity and the environment, including factors causing and alleviating heightened BMI"),
+                              
+                              div(class= 'd-flex flex-row flex-wrap gap-3 justify-content-center',
+                                
+                                  graph_wrapper(header = 'Obesity with pub concentration by sex',
+                                  span(class = 'text-muted','Males are affected by pubs more than women'),
+                                                males_affected_by_pubs_more_than_women),
+                                  
+                                  graph_wrapper(header = 'Obesity with Food Outlet concentration by sex',
+                                  span(class = 'text-muted','Males are affected by Food Outlets more than women'),
+                                                
+                                                males_affected_by_food_outlets_more_than_women),
+                                  
+                                  graph_wrapper(header = 'Obesity with Green Space concentration by sex',
+                                                span(class = 'text-muted', 'Females respond less positively to Green Space'),
+                                                females_respond_less_positively_to_green_space)
+                                  ),
+                              div(class= 'd-flex flex-row flex-wrap gap-3 justify-content-center',
+                                  
+                                  graph_wrapper(header = 'Obeesity with Green Space Proximity by Urban - Rural',
+                                                span(class = 'text-muted', 'Semi Rural responds best to Green Space'),
+                                                
+                                                semi_rural_responds_best_to_green_space),
+                              
+                                  graph_wrapper(header = 'Obesity with Fast Food Concentration',
+                                                span(class = 'text-muted', 'Fast Food Outlets weight on Obesity'),
+                                                
+                                                fast_food_outlets_weight_on_obesity),
+                              
+                                  graph_wrapper(header = 'Obesity with Pub concentration',
+                                                span(class = 'text-muted', 'Pubs Weight on Obesity'),
+                                                
+                                                pubs_weight_on_obesity)
+                              ),
+                              
+                              
+                                  )
+                              ),
+                              
                               div(id = "NorthernTrust-tab", class = "tab-pane active show", style = " ",
                                   div(class = "container-fluid",   style = "padding-left: 150px;",
                                       h3(" Northern Trust Analytics"),
@@ -1005,7 +1142,8 @@ ui <- page_fluid( id = 'main-content',
                               div(id = "lifestyle-tab", class = "  tab-pane show active ", style = " ",
                                   div(style = "padding-left: 150px;",
                                       h3("Lifestyle Dashboard"),
-                                      p(class = 'lead',"Deprivation content will be displayed here when the Users nav item is clicked."),
+                                      p(class = 'lead',"Combinations of Factors including socio-economic ones affecting
+                                        obesity"),
                                       # h6('Health Burden Attributable to obesity'),
                                           
                                           # graph_wrapper(header = span(div('BMI with deprivation'),
@@ -1015,9 +1153,10 @@ ui <- page_fluid( id = 'main-content',
                                           div(class = "rounded-5 bg-light d-flex flex-row gap-3 flex-wrap justify-content-around",
                                               div(style = '', class = 'grid-item p-5 m-5',
                                                   div(class = "card-header",# style = "font-size: 0.5em;",
-                                                      'Prevalence of Obesity and Overweight with Deprivation by age',
+                                                      'Proportion of population at each BMI with Increasing Deprivation',
                                                       span(class = 'text-bg-secondary',
-                                                           'The gradient is neutral to positive, to varying degrees among age groups')
+                                                           'As is sometimes the case Obesity grows faster than overweight in the 
+                                                           presence of real catalyst ')
                                                   ),
                                                   deprivation_risk_by_bmi_chart
                                               )
@@ -1028,42 +1167,74 @@ ui <- page_fluid( id = 'main-content',
                                           
                                           
                                           #https://www.figma.com/colors/cyan/
-                                          metric_card(top = '2%', 
+                                          metric_card(top = '2.0%',  opacity = 'opacity-75',
                                                       'Prevalence Most and Least Deprived Quintile','Inequality in Overweight', 
                                                       color='#00CCCC'),
-                                          metric_card(top = '4.8%', 
+                                          metric_card(top = '4.8%',  opacity = 'opacity-75',
                                                       'Prevalence Most and Least Deprived Quintile',
                                                       'Inequality in Obesity', 
                                                       color='#00CCCC'),
-                                          metric_card(top = '2%', 
-                                                      'Prevalence Most and Least Deprived Quintile','Inequality in Overweight', 
+                                          
+                                          metric_card(top = '34%',  opacity = 'opacity-75',
+                                                      'Prevalence of Overweight','Absolute Prevalence in Overweight', 
                                                       color='#00FF80'),
-                                          metric_card(top = '4.8%', 
-                                                      'Prevalence Most and Least Deprived Quintile',
-                                                      'Inequality in Obesity', 
+                                          metric_card(top = '22%', opacity = 'opacity-75',
+                                                      'Prevalence of Obesity','Absolute Prevalence in Obesity', 
                                                       color='#00AAFF'),
-                                          metric_card(top = '2%', 
-                                                      'Prevalence Most and Least Deprived Quintile','Inequality in Overweight', 
-                                                      color='#00FFAA'),
-                                          metric_card(top = '4.8%', 
-                                                      'Prevalence Most and Least Deprived Quintile',
-                                                      'Inequality in Obesity', 
-                                                      color='#0055FF')
+                                          
+                                          metric_card(top = '80-100',  opacity = 'opacity-75',
+                                                      'Relative Prevalence', 
+                                                      'Greatest Inequality At Risk BMI',
+                                                      color='#ffc800'),  # %>% browsable() %>% page_fluid()
+                                          
+                                          metric_card(top = '60-80',  opacity = 'opacity-75',
+                                                      'Absolute Prevalence', 
+                                                      'Most At Risk BMI',
+                                                      color='#0055FF'),  ##00FFAA' %>% browsable() %>% page_fluid()
+                                          
+                                          metric_card(top = 'Bottom Quintiles',  opacity = 'opacity-75',
+                                                      'Absolute Prevalence', 
+                                                      'Most At Risk BMI',
+                                                      color='#0055FF')#,  # %>% browsable() %>% page_fluid()
+                                          
+                                          # metric_card(top = 'Bottom 2 Quintiles, 40-80 year olds',  opacity = 'opacity-75',
+                                          #             'Absolute Prevalence',
+                                          #             'Remain highest At Risk BMI',
+                                          #             color='#0055FF')
                                       ),
                                       br(),br(),br(),
                                       div(class = "d-flex flex-row flex-wrap gap-3 justify-content-evenly",
                                           graph_wrapper(header = 'Inequality in Obesity',obese_inequality_chart),
                                           graph_wrapper(header = 'Inequality in Overweight',overweight_inequality_chart),
-                                          graph_wrapper(header = 'Slope of inequality ',inequality_chart),
+                                          graph_wrapper(header = span('Slope of inequality ',
+                                                                      span(class = 'text-muted','Least Deprived minus Most Deprived')),inequality_chart),
                                       ),
                                       br(),br(),br(),
-                                      
-                                      div(class = "d-flex flex-row flex-wrap gap-3 justify-content-evenly",
                                           
-                                      deprivation_risk_by_age20_chart,
+                                            h3("Deprivation Risk with Age "),
+                                          p(class = 'lead',"Track the best fit of the percentage of the population that are at risk BMI with 
+                                            increasing deprivation."), 
+                                          span(class = 'text-bg-secondary p-1 m-1 rounded-2',
+                                          'The trend shows the clear predominanc of obesity prevalence on age, but that older obesity prevalence increases
+                                          with deprivation '),
+                                          span(class = 'text-secondary',
+                                               'Deprivation increases going right'),
+                                          
+                                          
+                                      div(class = "d-flex flex-row flex-wrap gap-5 justify-content-evenly",
+                                      deprivation_risk_by_age20_chart
+                                      ),
                                       
+                                      
+                                      h3(" DEA level Analysis"),
+                                      p(class = 'lead',"Obesity and Overweight prevalence by District Electoral Area (nested by HSCT)"),
+                                      
+                                      
+                                      div(class = "d-flex flex-row flex-wrap gap-5 justify-content-evenly",
                                       DEA_obesity_prevalence
                                       )
+                                      
+                                      
                                           
                                           
                                           # metric_card(top = 'Health Metric','','',color='teal'),
@@ -1074,12 +1245,52 @@ ui <- page_fluid( id = 'main-content',
                                   )
                               ),
                               
-                              # Users Tab Content
+                              # deprivation Tab -----
                               div(id = "deprivation-tab", class = "  tab-pane active show", style = " ",
                                   div(class = "container-fluid",   style = "padding-left: 150px;",
                                       h3("HotSpots "),
                                       
                                       h6(class='lead', "Hotspots of deprivation gradients"),
+                                      
+                                      
+                                      div(class= 'd-flex flex-row gap-5 mx-5',
+                                      div(style = 'background-color: rgb(206,55,88);',
+                                          class = 'p-2 w-25 rounded-3 text-white', 
+                                          span('Top Obese'),
+                                          h4('28.8%'),
+                                          span('MDM Most Deprived, NHSCT')
+                                          ),
+                                      
+                                      div(style = 'background-color: rgb(206,55,88);',    
+                                          class = 'p-2 w-25 rounded-3 text-white', 
+                                          'Top Overweight',
+                                          h4('41.9%'),
+                                          span('MDM Most Deprived, WHSCT')
+                                      ),
+                                      
+                                      div(style = 'background-color: rgb(206,55,88);',   
+                                          class = 'p-2 w-25 rounded-3 text-white', 
+                                          'Second Obese',
+                                          h4('27.9%'),
+                                          'MDM Most Deprived, SHSCT'
+                                      ),
+                                      
+                                      div(style = 'background-color: rgb(206,55,88);',   
+                                          class = 'p-2 w-25 rounded-3 text-white', 
+                                          'Second Overweight',
+                                          h4('41.4%'),
+                                          'MDM Second Most Deprived, WHSCT'
+                                      )
+                                      ),
+                                      
+                                      #top obese
+                                      # 26         Most Deprived  NHSCT      obese  646 2237 0.28877962
+                                      # 27         Most Deprived  SHSCT      obese  942 3370 0.27952522
+                                      
+                                      #top overweight
+                                      # 1         Least Deprived  WHSCT overweight  143  341 0.41935484
+                                      # 2             Quintile 2  WHSCT overweight 2105 5076 0.41469661
+                                      
                                       div(class="grid-5x5 mx-3 px-3",
                                           style= 'display: grid;
                                              grid-template-columns: repeat(5, 1fr);
@@ -1094,25 +1305,63 @@ ui <- page_fluid( id = 'main-content',
                               # Society tab ----
                               div(id = "society-tab", class = "tab-pane show active", style = " ",
                                   div(class = "container-fluid",   style = "padding-left: 150px;",
-                                      h3(" Society, Productivity and Cost Analysis on the effects of Disease"),
+                                      h3(" Effects of Disease"),
                                       p(class = 'lead', "Analysis on societal impact of Obesity including social and informal costs, lost productivity, societal pressures, and hospital infrastructure"),
                                       # tags$ul(tags$li('Cost'),
                                       #         tags$li('Sick days'),
                                       #         tags$li('Bed days'),
                                       #         tags$li('Avg LoS for a bed related morbidity'),
                                       
+                                      # h5('Incident Disease and Risk',class = 'p-3 m-3 border-bottom bg-light'),
+                                      # sm_hatched_subtitle('Incident Disease and Risk'),
                                       
-                                      h5('Costs, Pounds (millions)',class = 'p-3 border-bottom bg-light'),
+                                      # hatched_subtitle('Attributable Disease'),
                                       
-                                      div(class = 'd-flex flex-row flex-wrap justify-content-center gap-3',
-                                          
-                                      paf_bmi,
-                                      absf_bmi
+                                      div(class= 'p-1 m-1',
+                                      div(class = 'bg-light px-5 m-4 rounded-4'  ,   
+                                      sm_hatched_subtitle('Attributable Fractions of high BMI on select morbidity across disease classes'),
+                                      # h5('Attributable Fractions',class = 'p-3 border-bottom bg-light'),
+                                      
+                                      p(class = 'lead', "Incidence is reported, inferred or derived. The Interpretation here is how much new incident Disease is averted by completely 
+                                        eradictating exposure to the risk factor")
+                                      )
                                       ),
                                       
+                                      div(class = 'mb-5 pb-5 d-flex flex-row flex-wrap justify-content-center gap-5',
+                                          
+                                      paf_bmi
                                       
-                                          h5('Costs, Pounds (millions)',class = 'alert alert-danger border-bottom border-danger'),
-                                      div(class = 'd-flex flex-row flex-wrap justify-content-center gap-3',
+                                      ),
+                                      
+                                      div(class= 'pt-5 mt-5 px-3 mx-3',
+                                          
+                                      sm_hatched_subtitle('Absolute Attributable Disease of high BMI grouped by disease classes'),
+                                      p(class = 'lead', "Incidence is reported, inferred or derived. The Interpretation here is how much new incident Disease is averted by completely 
+                                        eradictating exposure to the risk factor")
+                                      
+                                      ),
+                                      
+                                      div(class = 'd-flex flex-row flex-wrap justify-content-center gap-5',
+                                          
+                                      absf_bmi
+                                      
+                                      ),
+                                      
+                                      br(),br(),br(),
+                                      
+                                      div(class ='pt-5 mt-5',
+                                      h3(
+                                         "Society, Productivity and Cost Analysis on the effects of Disease"),
+                                      p(class = 'lead', "Analysis on societal impact of Obesity including social and informal costs, lost productivity, societal pressures, and hospital infrastructure"),
+                                      ),
+                                      div(class = 'my-3',
+                                          h5('Costs, Pounds (millions) of Cardiovascular Disease',
+                                             class = 'alert border-bottom border-danger',
+                                             style = 'background-color: rgb(233,74,94);'
+                                             )
+                                      ),
+                                      
+                                      div(class = 'mx-5 px-5 d-flex flex-row flex-wrap justify-content-start gap-3',
                                           metric_card_nhs_obesity,
                                           metric_card_society_obesity,
                                           metric_card_inpatient_obesity,
@@ -1124,10 +1373,17 @@ ui <- page_fluid( id = 'main-content',
                                           metric_card_long_term_obesity,
                                           metric_card_morbidity_obesity,
                                           metric_card_mortality_obesity,
-                                          metric_card_informal_care_obesity),
+                                          metric_card_informal_care_obesity
+                                          
+                                          
+                                          ),
+                                          span(class=' text-muted mb-3', 'Source: The British Heart Foundation'),
                                       
-                                      h5('Productivity costs',class = 'alert alert-info border-bottom border-info'),
-                                      div(class = 'd-flex flex-row flex-wrap justify-content-center gap-3',
+                                      div(class = 'my-3',
+                                      h5('Productivity costs',class = 'mt-3 pt-3 alert alert-info border-bottom border-info ')
+                                          ),
+                                      
+                                      div(class = 'mx-5 px-5  d-flex flex-row flex-wrap justify-content-start gap-3 pt-3 mt-3',
                                           metric_card_obesity_days_lost_obesity,
                                           metric_card_obesity_spells_obesity,
                                           metric_card_obesity_cost_obesity,
@@ -1136,11 +1392,15 @@ ui <- page_fluid( id = 'main-content',
                                           metric_card_obesity_cost_population
                                       ),
                                       
+                                      span(class=' text-muted mb-3', 'Source: NISRA - NICS sickness stats, PHA- Population health modelling'),
+                                      
                                       #h6('Resource'),
                                       
+                                      div(class = 'my-3',
+                                      h5('Burden of Disease',class = 'alert alert-info border-bottom border-info')
+                                      ),
                                       
-                                      h5('Burden of Disease',class = 'alert alert-info border-bottom border-info'),
-                                      div(class = "d-flex flex-row flex-wrap gap-3 justify-content-between",
+                                      div(class = "mx-5 px-5  d-flex flex-row flex-wrap gap-3 justify-content-start  pt-3 mt-3",
                                           #metric_card(top = 'Resource','','',color='Purple',opacity = 'opacity-75'),
                                           # h2('Health Metrics'),
                                           metic_card_prev_total_obesity,
@@ -1149,9 +1409,13 @@ ui <- page_fluid( id = 'main-content',
                                           metic_card_daly_total_obesity,
                                           metic_card_yld_total_obesity
                                       ),
+                                      
+                                      span(class=' text-muted mb-3', 'Source: PHA- Population health modelling'),
                                           
-                                    h5('Resource Metrics',class = 'alert alert-info border-bottom border-info'),
-                                          div(class = "d-flex flex-row flex-wrap gap-3 justify-content-between",
+                                      div(class = 'my-3',
+                                    h5('Resource Metrics',class = 'alert alert-info border-bottom border-info')
+                                      ),
+                                          div(class = " mx-5 px-5 d-flex flex-row flex-wrap gap-3 justify-content-start ms-5 ps-5 pt-3 mt-3",
                                               
                                           metric_card_total_bed_days,
                                           metric_card_costs_total_obesity,
@@ -1159,17 +1423,19 @@ ui <- page_fluid( id = 'main-content',
                                           metric_card_obesity_cost_obesity
                                           
                                       ),
+                                      span(class=' text-muted mb-3', 'Source: DoH - Outpatient Statistics, PHA- Population health modelling'),
+                                      
                                       # h6('Comorbidities'),
-                                      div(class = "d-flex flex-row flex-wrap gap-3 justify-content-between",
+                                      #div(class = "d-flex flex-row flex-wrap gap-3 justify-content-between",
                                           
                                           # metric_card(top = 'Resource','','',color='purple',opacity = 'opacity-100'),
                                           
     
-                                          graph_wrapper(comorbidities_curve_wo_0_or_1),
-                                          graph_wrapper(comorbidities_age),
-                                          graph_wrapper(comorbidities_bmi),
+                                          # graph_wrapper(comorbidities_curve_wo_0_or_1),
+                                          # graph_wrapper(comorbidities_age),
+                                          # graph_wrapper(comorbidities_bmi),
                                           
-                                      ),
+                                      #),
                                       #     
                                       #     h6('Relative Risks'),
                                       # 
@@ -1253,11 +1519,12 @@ ui <- page_fluid( id = 'main-content',
                                                 p(class = 'lead','Choose intervention type, efficacy, duration and cost parameters'),
                                             div(class =' p-3 rounded-3', #bg-success-subtle
                                                 intervention_module_ui("intervention1"),
-                                                actionButton(inputId = 'reset', label = 'Reset ', class = 'btn-success')
+                                                # actionButton(inputId = 'reset', label = 'Reset ', class = 'btn-success')
                                             ),
   br(),br(),
                                             div(class = '',
                                                 div(width="80%", class="m-5 p-5 mb-3",
+                                                    #bg-yellow
                                                 HTML('
                                         
   <!-- <label class="form-label mt-4">Input addons</label> -->
@@ -1268,7 +1535,7 @@ ui <- page_fluid( id = 'main-content',
         <p class="form-label mt-1 text-muted "> A flat or start up cost assigned to the first year of the intervention </p>
   <div>
     <div class="input-group mb-3">
-      <span class="input-group-text bg-yellow border-0">£</span>
+      <span class="input-group-text  border-0">£</span> 
       <input id="cost_input_flat" type="number"  value="10000" class="form-control" aria-label="Amount (to the nearest pound)">
       
       <span class="input-group-text bg-white">.00</span>
@@ -1285,7 +1552,7 @@ ui <- page_fluid( id = 'main-content',
       -->
 
       <span class="input-group-text bg-teal">£</span>
-      <input id="cost_input_per_person_per_year" type="number"  value="10" class="form-control" aria-label="Amount (to the nearest pound)">
+      <input id="cost_input_per_person_per_year" type="number"  value="2" class="form-control" aria-label="Amount (to the nearest pound)">
             <span class="input-group-text bg-white">.00</span>
             <span class="input-group-text bg-dark">per person</span>
             <span class="input-group-text bg-dark">per year</span>
@@ -1297,7 +1564,7 @@ ui <- page_fluid( id = 'main-content',
       <p class="form-label mt-1 text-muted ">   A cost per number of people <em>reached </em>. It is assigned to the first year for accounting </p>
         <div class="input-group mb-3">
       <span class="input-group-text bg-teal">£</span>
-      <input id="cost_input_per_person" type="number"  value="100" class="form-control" aria-label="Amount (to the nearest pound)">
+      <input id="cost_input_per_person" type="number"  value="2" class="form-control" aria-label="Amount (to the nearest pound)">
       <span class="input-group-text bg-white">.00</span>
       <span class="input-group-text bg-dark ">per person</span>
 
@@ -1380,57 +1647,72 @@ div( class='w-100',                       actionButton(class='float-right w-100 
                                     #     reactableOutput("morbidity_summary_table", height = "600px")
                                     # ),
                                     
-                                    
+   
+div(id = 'outputs', class= 'container',                                
+div(id = 'outputs-left', class= 'w-75',
                                     br(),br(),
-div(class= 'd-flex',
-                                    div(class = "bg-light p-2 m-2 w-50",
+div(class= 'd-flex gap-2',
+                                    div(class = "bg-light-subtle p-2 m-2 w-50 rounded-4",
                                         div(class = "grid-item-content",
-                                            div(class = "card-header", "Stroke Incidence"),
+                                            div(class = "p-2 fw-bold fs-5", "Stroke Incidence"),
                                             echarts4rOutput("stroke_incidence_chart", height = "250px")
                                         )
                                     ),
   
-  div(class = "bg-light p-2 m-2 w-50 ",
+  div(class = "bg-light-subtle p-2 m-2 w-50 rounded-4",
       div(class = "grid-item-content",
-          div(class = "card-header", "Stroke Prevalence"),
+          div(class = "p-2 fw-bold fs-5", "Stroke Prevalence"),
           echarts4rOutput("stroke_prevalence_chart", height = "250px")
       )
   ) ),
                                     
-div(class= 'd-flex flex-row',
+div(class= 'd-flex gap-2 flex-row',
     
-  div(class = "bg-light p-2 m-2 w-50",
+  div(class = "bg-light-subtle p-2 m-2 w-50 rounded-4",
       div(class = "grid-item-content",
-          div(class = "card-header", "CHD Incidence"),
+          div(class = "p-2 fw-bold fs-5", "CHD Incidence"),
           echarts4rOutput("chd_incidence_chart", height = "250px"),
       )
   ),
   
-  div(class = "bg-light p-2 m-2 w-50",
+  div(class = "bg-light-subtle p-2 m-2 w-50 rounded-3 rounded-4",
       div(class = "grid-item-content",
-          div(class = "card-header", "CHD Prevalence"),
+          div(class = "p-2 fw-bold fs-5", "CHD Prevalence"),
           echarts4rOutput("chd_prevalence_chart", height = "250px")
       )
   )
   ),
-                                    
+
+div(class = 'd-flex flex-row justify-content-center align-items-center gap-3',
+    
                                     # ICER charts
-                                    div(class = "bg-light p-2 m-2",
+                                    div(class = "bg-light-subtle p-2 m-2 rounded-4 w-75",
                                         div(class = "grid-item-content",
-                                            div(class = "card-header", "Intervention Costs and Savings"),
+                                            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Intervention Costs and Savings"),
                                             echarts4rOutput("icer_costs_chart", height = "250px")
                                         )
                                     ),
+    
+    div(
+      
+        div(dot('#3fb1e3'),  div(style = 'display:inline;font-weight:bold;color:grey', ' Cost of intervention ')),br(),
+        div(dot('#6be6c1'), div(style = 'display:inline;font-weight:bold;color:grey', 'Concrete healthcare provision Savings  ')),br(),
+        div(dot('#626c91'), div(style = 'display:inline;font-weight:bold;color:grey', ' Net Return of Savings Minus Cost')),br(),
+        div(dot('#a0a7e6'), div(style = 'display:inline;font-weight:bold;color:grey', ' Quality Adjusted Life Years (QALYS) costed at a rate of 1 QALY = £20,000')),br()
+      
+    )
+    ),
+
   div(class = 'd-flex flex-row gap-3',
-                                    div(class = "bg-light p-2 m-2 theme-green w-50",
+                                    div(class = "bg-light-subtle p-2 m-2 theme-green w-50 rounded-4",
                                         div(class = "grid-item-content",
-                                            div(class = "card-header", "Return on Investment (ROI)"),
+                                            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Return on Investment (ROI)"),
                                             echarts4rOutput("icer_roi_chart", height = "250px")
                                         )
                                     ),
-                                    div(class = "bg-light p-2 m-2 theme-green w-50",
+                                    div(class = "bg-light-subtle p-2 m-2 theme-green w-50 rounded-4",
                                         div(class = "grid-item-content",
-                                            div(class = "card-header", "ICER and QALY Gains"),
+                                            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "ICER and QALY Gains"),
                                             echarts4rOutput("icer_qaly_chart", height = "250px")
                                         )
                                     )
@@ -1441,145 +1723,220 @@ div(class= 'd-flex flex-row',
 
 
 div(class = 'd-flex flex-row gap-3',
-    div(class = "bg-light p-2 m-2 theme-green w-50",
+  div(class = "bg-light-subtle p-2 m-2 theme-green w-50 rounded-4",
         div(class = "grid-item-content",
-            div(class = "card-header", " Productivity impact"),
-            echarts4rOutput("illness_chart", height = "250px")
+            div(class = "p-2 fw-bold fs-5 pt-2 ps-2", " Productivity impact"),
+            div(class = "lead fs-5 ps-2  pb-2", "Sick Spells"),
+            echarts4rOutput("illness_chart", height = "200px"),
+            div(class = "lead fs-5 ps-2  pb-2", "Cost"),
+            echarts4rOutput("illness_chart1", height = "180px"),
+            div(class = "lead fs-5 ps-2  pb-2", "Productive Days Lost"),
+            echarts4rOutput("illness_chart2", height = "180px")
+            
         )
     ),
-    div(class = "bg-light p-2 m-2 theme-green w-50",
+    div(class = "bg-light-subtle p-2 m-2 theme-green w-50 rounded-4",
         div(class = "grid-item-content",
-            div(class = "card-header", "Hospitals Impact"),
-            echarts4rOutput("hospital_admissions_chart", height = "250px")
+            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Hospital Impact"),
+            div(class = "lead fs-5 ps-2  pb-2", "Bed Days"),
+            echarts4rOutput("hospital_admissions_chart", height = "200px"),
+            div(class = "lead fs-5 ps-2  pb-2", "Emergency Admissions"),
+            echarts4rOutput("hospital_admissions_chart1", height = "180px"),
+            div(class = "lead fs-5 ps-2  pb-2", "Admissions"),
+            echarts4rOutput("hospital_admissions_chart2", height = "180px")
+            
         )
     )
 ),
 
-div(class = "bg-light p-2 m-2 theme-green w-100",
+h3("Advanced Morbidity Metrics "),
+h6(class='lead', "Investigate morbidity in combinations, and considering the effect of quality and quantity on life"),
+
+
+div(class = "bg-light-subtle p-2 m-2 theme-green w-100 rounded-3 rounded-4 d-flex flex-row gap-3",
     div(class = "grid-item-content",
-        div(class = "card-header", "Disability Adjusted Life Years (DALYs)"),
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Disability Adjusted Life Years (DALYs)"),
         echarts4rOutput("daly_chart", height = "250px")
+    ),
+    
+    div(class = "grid-item-content",
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Averted DALYs"),
+        echarts4rOutput("daly_chart_averted", height = "250px")
+    ),
+    
+    div(class = "grid-item-content",
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Equality in DALYs"),
+        echarts4rOutput("daly_chart_mdm", height = "250px")
+    ),
+    
+    div(class = "grid-item-content",
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Averted DALYs"),
+        echarts4rOutput("daly_chart_mdm_averted", height = "250px")
     )
+),
+
+div(class = "bg-light p-2 m-2 theme-green w-100 rounded-4 d-flex flex-row gap-3",
+    div(class = "grid-item-content",
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Composition of Disability Adjusted Life Years by years lived with disease and years of life lost"),
+        echarts4rOutput("daly_chart_composition", height = "250px")
+    )
+    ),
+    
+    div(class = "bg-light p-2 m-2 theme-green w-100 rounded-4 d-flex flex-row gap-3",
+        div(class = "grid-item-content",
+            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Modelled Long Term Conditions Disease Cost"),
+            echarts4rOutput("disease_cost_chart", height = "250px")
+        ),
+    br(), 
+    br()
+),
+div(class = "bg-light p-2 m-2 theme-green w-100 rounded-4 d-flex flex-row gap-3",
+    div(class = "grid-item-content",
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Modelled Long Term Conditions Disease Cost saved"),
+        echarts4rOutput("disease_cost_chart_saved", height = "250px")
+    ),
+    br(), 
+    br()
+),
+
+div(class = "bg-light p-2 m-2 theme-green w-100 rounded-4 d-flex flex-row gap-3",
+    div(class = "grid-item-content",
+        div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Modelled Disease Cost by indivdual Condition "),
+        echarts4rOutput("disease_cost_breakdown", height = "250px")
+    ),
+    br(), 
+    br()
 ),
 
 
 br(),br(),
 
 div(class = 'd-flex flex-row gap-3',
-    div(class = "bg-light p-2 m-2 theme-green w-50",
+  div(class = "bg-light-subtle p-2 m-2 theme-green w-50 rounded-4",
         div(class = "grid-item-content",
-            div(class = "card-header", "Average Cambridge Multimorbidity Score"),
+            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Average Cambridge Multimorbidity Score"),
             echarts4rOutput("cmms_chart", height = "250px")
         )
     ),
-    div(class = "bg-light p-2 m-2 theme-green w-50",
+    div(class = "bg-light-subtle p-2 m-2 theme-green w-50 rounded-4",
         div(class = "grid-item-content",
-            div(class = "card-header", "Raw Multimorbidity Count"),
+            div(class = "p-2 fw-bold fs-5  pt-2 ps-2", "Raw Multimorbidity Count"),
             echarts4rOutput("multimorbidity_chart", height = "250px")
         )
     )
 ),
 
 br(),
-br(),
+br()
+),
 
-#   div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#       div(class = "grid-item-content",
-#           div(class = "card-header", "Diabetes Incidence"),
-#           echarts4rOutput("diabetes_incidence_chart", height = "250px")
-#       )
-#   ),
-# div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#     div(class = "grid-item-content",
-#         div(class = "card-header", "COPD Incidence"),
-#         echarts4rOutput("copd_incidence_chart", height = "250px")
-#     )
-# ),
-# div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#     div(class = "grid-item-content",
-#         div(class = "card-header", "Asthma Incidence"),
-#         echarts4rOutput("asthma_incidence_chart", height = "250px")
-#     )
-# ),
-  # div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-  #     div(class = "grid-item-content",
-  #         div(class = "card-header", "Lung Cancer Incidence"),
-  #         echarts4rOutput("lung_cancer_incidence_chart", height = "250px")
-  #     )
-  # ),
-  # div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-  #     div(class = "grid-item-content",
-  #         div(class = "card-header", "Dementia Incidence"),
-  #         echarts4rOutput("dementia_incidence_chart", height = "250px")
-  #     )
-  # ),
-  # div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-  #     div(class = "grid-item-content",
-  #         div(class = "card-header", "Heart Failure Incidence"),
-  #         echarts4rOutput("heart_failure_incidence_chart", height = "250px")
-  #     )
-  # ),
-# 
-#   div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#       div(class = "grid-item-content",
-#           div(class = "card-header", "Non-Diabetic Hyperglycaemia Incidence"),
-#           echarts4rOutput("non_diabetic_hyperglycaemia_incidence_chart", height = "250px")
-#       )
-#   ),
-# div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#         div(class = "grid-item-content",
-#             div(class = "card-header", "Chronic Kidney Disease Incidence"),
-#             echarts4rOutput("chronic_kidney_disease_incidence_chart", height = "250px")
-#         )
-#   ),
-# div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#     div(class = "grid-item-content",
-#         div(class = "card-header", "Osteoarthritis Incidence"),
-#         echarts4rOutput("osteoarthritis_incidence_chart", height = "250px")
-#     )
-# ),
-#   div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#       div(class = "grid-item-content",
-#           div(class = "card-header", "Osteoporosis Incidence"),
-#           echarts4rOutput("osteoporosis_incidence_chart", height = "250px")
-#       )
-#   ),
-#   div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#       div(class = "grid-item-content",
-#           div(class = "card-header", "Rheumatoid Arthritis Incidence"),
-#           echarts4rOutput("rheumatoid_arthritis_incidence_chart", height = "250px")
-#       )
-#   ),
-#   div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-#       div(class = "grid-item-content",
-#           div(class = "card-header", "Cancer Incidence"),
-#           echarts4rOutput("cancer_incidence_chart", height = "250px")
-#       )
-#   ),
+div( id = 'outputs-right', class= 'w-25 h-75 p-5 position-sticky',style = 'top:7vh;',
+     sticky_side_bar(),
+     
+     # div(class = 'alert alert-success', h6('DALYS'), h4('456,454')  ),
+     # div(class = 'alert alert-danger',  h6('DALYS'), h4('456,454')  ),
+     # div(class = 'alert alert-warning',  h6('DALYS'), h4('456,454') ),
+     # div(class = 'alert alert-primary',  h6('DALYS'), h4('456,454') ),
+     # div(class = 'alert alert-secondary', h6('DALYS'), h4('456,454')  ),
+     # div(class = 'alert alert-info',  h6('DALYS'), h4('456,454')  ),
+     # div(class = 'alert alert-light',  h6('DALYS'), h4('456,454') ),
+     # div(class = 'alert alert-dark',  h6('DALYS'), h4('456,454') ),
+     # div(class = 'alert bg-info',  h6('DALYS'), h4('456,454') ),
+     # div(class = 'alert bg-primary',  h6('DALYS'), h4('456,454') ),
+     # circular_value('45,324')
+     
+     )
+
+),
+
+
+  tags$div(
+    class = " py-3", #container
+    h4("Morbidity Focus"),
+    selectizeInput(
+      inputId = "disease",
+      label = "Disease",
+      choices = character(0),
+      selected = NULL,
+      options = list(
+        valueField = "email",
+        labelField = "name",
+        render = I("{
+    item: function(item, escape) {
+      console.log(item);
+      var name = item.email ? '<span class=\"name\">' + item.email + '</span>' : '';
+      return '<div class =  m-2 p-2>' + '<span class=\"email m-2\">' + item.name + '</span></div>';
+    },
+    option: function(item, escape) {
+      var label = item.name || item.email;
+      var caption = item.name ? item.email : null;
+      return '<div class =  \"m-2 p-2 rounded-3 \">' +
+       (caption ? '<div class=\"label position-relative\">' + item.email + '</div>' : '') 
+        
+      '</div>';
+    }
+  }") 
+      )),
+    icon('globe',class='visually-hidden')#,
+    # tags$div(class = "mt-2 mb-2", textOutput("selected_disease"))
+  ),
+
+  # Selected Morbidity Prevalence trend charts
+div(class = 'd-flex flex-row align-items-start',
+                                    div(class = "grid-item--graph p-2 m-2 theme-green",
+                                        div(class = "grid-item-content",
+                                            div(class = "fw-bold fs-4 p-2",
+                                                textOutput("selected_disease1"), 'Prevalence'
+                                                #"Selected Prevalence"
+                                                ),
+                                            echarts4rOutput("selected_prevalence_chart", height = "250px")
+                                        )
+                                    ),
+
+div(class = "grid-item--graph p-2 m-2 theme-green", #grid-item 
+    div(class = "grid-item-content",
+        div(class = " p-2", #card-header
+            # textOutput("selected_disease")
+            div(class = "fw-bold fs-4 p-2",
+                'Incidence'
+            )
+            #"Selected Prevalence"
+        ),
+        echarts4rOutput("selected_incidence_chart", height = "250px")
+    )
+)
+),
+  
+
+
+
+
 
 # div(
 #   h3('Prevalence'),
-#   
+#
 #   # Prevalence trend charts
+#                                     div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
+#                                         div(class = "grid-item-content",
+#                                             div(class = "card-header", "Diabetes Prevalence"),
+#                                             echarts4rOutput("diabetes_prevalence_chart", height = "250px")
+#                                         )
+#                                     ),
+#                                     div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
+#                                         div(class = "grid-item-content",
+#                                             div(class = "card-header", "COPD Prevalence"),
+#                                             echarts4rOutput("copd_prevalence_chart", height = "250px")
+#                                         )
+#                                     ),
+#                                     div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
+#                                         div(class = "grid-item-content",
+#                                             div(class = "card-header", "Asthma Prevalence"),
+#                                             echarts4rOutput("asthma_prevalence_chart", height = "250px")
+#                                         )
+#                                     ),
+#                                     
+#                                     
 
-                                    div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-                                        div(class = "grid-item-content",
-                                            div(class = "card-header", "Diabetes Prevalence"),
-                                            echarts4rOutput("diabetes_prevalence_chart", height = "250px")
-                                        )
-                                    ),
-                                    div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-                                        div(class = "grid-item-content",
-                                            div(class = "card-header", "COPD Prevalence"),
-                                            echarts4rOutput("copd_prevalence_chart", height = "250px")
-                                        )
-                                    ),
-                                    div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
-                                        div(class = "grid-item-content",
-                                            div(class = "card-header", "Asthma Prevalence"),
-                                            echarts4rOutput("asthma_prevalence_chart", height = "250px")
-                                        )
-                                    ),
 #                                     div(class = "grid-item grid-item--graph p-2 m-2 theme-green",
 #                                         div(class = "grid-item-content",
 #                                             div(class = "card-header", "Non-Diabetic Hyperglycaemia Prevalence"),
@@ -1729,7 +2086,23 @@ $(document).ready(function() {
             inst.resize();
           }
         });
-      }, 300);
+      }, 100);
+    });
+    
+    
+          $(' .nav-card-icon').on('click', function() {
+      console.log('nav click resize');
+      // Trigger ECharts resize
+      setTimeout(function() {
+        $('.echarts4r').each(function() {
+
+          // Safely resize only initialized ECharts instances
+          var inst = echarts.getInstanceByDom(this);
+          if (inst) {
+            inst.resize();
+          }
+        });
+      }, 100);
     });
     
     // Tab Navigation Functionality
@@ -1783,6 +2156,9 @@ $(document).ready(function() {
         case 'nhsct':
           tabId = 'NorthernTrust-tab';
           break;
+            case 'int (neighhbourhood)':
+          tabId = 'int-tab';
+          break;
         case 'lifestyle':
           tabId = 'lifestyle-tab';
           break;
@@ -1803,14 +2179,15 @@ $(document).ready(function() {
       // }
       
       // Invalidate Leaflet map size when geography tab is shown
-      if (tabId === 'analytics-tab') {
+      
+      //if (tabId === 'analytics-tab') {
         setTimeout(function() {
           var map = $('#mymap').data('leaflet-map');
           //if (map) {
             map.invalidateSize();
           //}
         }, 100);
-      }
+      //}
       
       // Initialize pivot module if reports tab is shown
       if (tabId === 'reports-tab') {
@@ -1835,8 +2212,8 @@ $(document).ready(function() {
     
     
      setTimeout(function() {
-      $('.tab-pane').removeClass('active')
-      $('#' + 'analytics-tab').addClass('active show')
+      $('#main-tab-area .tab-pane').removeClass('active')
+      $('#' + 'specify-tab').addClass('active show')
      }, 1000);
      
     // setTimeout(function() {
@@ -2048,8 +2425,6 @@ server <- function(input, output, session) {
   # risk_spec    <- api$risk_spec
   # reset_all    <- api$reset_all
 
-  
-
   # Cost input reactive values
   cost_values <- reactiveValues()
 
@@ -2229,7 +2604,7 @@ server <- function(input, output, session) {
   costs <- reactiveVal({NULL})
 
   observe({
-    req(!is.null(simulation_state$results()) & nrow(simulation_state$results())>0)
+    # req(!is.null(simulation_state$results()) & nrow(simulation_state$results())>0)
     req(!is.null(output_df()) & nrow(output_df())>0)
 
     # x  <- calculate_costs_fn(as.data.table(simulation_state$results()))
@@ -2261,19 +2636,38 @@ server <- function(input, output, session) {
     # ][,year := as.character(year)
     # ])
 
-    x <- qalys()[disease == 'combined_uw', ] %>%
+    qaly_combined <- as.data.table(qalys())[disease == 'combined_uw', ]
+    if (nrow(qaly_combined) == 0) {
+      cost_per_qaly(NULL)
+      return()
+    }
+
+    x <- qaly_combined %>%
       dcast(formula = year  ~ intervention, value.var = 'total_uw', fill = 0L) %>%
       mutate(year = as.character(year)) %>%
+      mutate(
+        intervention = if ('intervention' %in% names(.)) intervention else 0,
+        `non-intervention` = if ('non-intervention' %in% names(.)) `non-intervention` else 0
+      ) %>%
       mutate(averted = `non-intervention` - intervention) %>%
       mutate(cumulative_averted = cumsum(averted))
     # print(x)
 
-    x <- x  %>%
+    cost_summary <- as.data.table(costs())[, .(total_cost = sum(total_cost)), by = .(intervention, year)]
+    if (nrow(cost_summary) == 0) {
+      cost_per_qaly(NULL)
+      return()
+    }
+
+    x <- x %>%
       left_join(
-        costs()[,.(total_cost = sum(total_cost)), by = .(intervention,year)
-        ][,year := as.character(year)
+        cost_summary[, year := as.character(year)
         ] %>%
           dcast(formula = year  ~intervention, value.var = 'total_cost', fill = 0L) %>%
+          mutate(
+            intervention = if ('intervention' %in% names(.)) intervention else 0,
+            `non-intervention` = if ('non-intervention' %in% names(.)) `non-intervention` else 0
+          ) %>%
           mutate(savings = `non-intervention` - intervention) %>%
           mutate(cumulative_savings = cumsum(savings)),
         by='year'
@@ -2289,7 +2683,17 @@ server <- function(input, output, session) {
     req(cost_per_qaly())
     req(total_cost_time_series())
 
-    x <- cost_per_qaly()[total_cost_time_series(),on='year'] %>%
+    cost_per_qaly_df <- as.data.frame(cost_per_qaly())
+    intervention_cost_df <- as.data.frame(total_cost_time_series())
+
+    if (nrow(cost_per_qaly_df) == 0 || nrow(intervention_cost_df) == 0) {
+      icer(NULL)
+      return()
+    }
+
+    x <- cost_per_qaly_df %>%
+      left_join(intervention_cost_df, by = 'year') %>%
+      mutate(cumulative_total_cost = replace_na(cumulative_total_cost, 0)) %>%
       mutate(cost_per_qaly_gained = (cumulative_savings-cumulative_total_cost) / cumulative_averted) %>%
       mutate(cumulative_monetised_qalys = cumulative_averted * 20000) %>%
       mutate(cost_per_qaly_gained_monetised = (cumulative_savings+cumulative_monetised_qalys-cumulative_total_cost) / cumulative_averted) %>%
@@ -2314,24 +2718,47 @@ server <- function(input, output, session) {
   # })
 
 ## ICER charts 
+  
+  
   output$icer_costs_chart <- renderEcharts4r({
     req(icer())
+    # validate(
+    #   need(
+    #     is.data.frame(icer()) && nrow(icer()) > 0,
+    #     "Specify target population and intervention shape and time to calculate cost parameters"
+    #   ))
+    
     print('icer chart')
     icer() %>%
-      e_charts(year) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
       e_line(cumulative_total_cost, name = "Cumulative Total Cost") %>%
       e_line(cumulative_savings, name = "Cumulative Savings") %>%
       e_line(cumulative_net_money, name = "Cumulative Net Money") %>%
       e_line(cumulative_monetised_qalys, name = "Monetised QALYs") %>%
-      e_tooltip()%>%
+      e_tooltip(
+        trigger = "axis",
+        formatter = e_tooltip_pointer_formatter(
+          style = "currency",
+          digits = 2,
+          locale = NULL,
+          currency = "GBP"
+        )
+      ) %>%
       e_theme('walden') %>%
+      e_format_y_axis(suffix = "£") %>%
       e_grid(containLabel = T)
   })
 
   output$icer_roi_chart <- renderEcharts4r({
     req(icer())
+    # validate(
+    #   need(
+    #     nrow(icer()) > 0,
+    #     "Specify target population and intervetniton shape and time to calculate cost parameters"
+    #   )
+    # )
     icer() %>%
-      e_charts(year) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
       e_line(roi, name = "ROI") %>%
       e_format_y_axis(suffix = "x") %>%
       e_tooltip()%>%
@@ -2340,13 +2767,21 @@ server <- function(input, output, session) {
   })
 
   output$icer_qaly_chart <- renderEcharts4r({
+    req(icer())
+    # validate(
+    #   need(
+    #     nrow(icer()) > 100,
+    #     "Specify target population and intervetniton shape and time to calculate cost parameters"
+    #   )
+    # )
 
     icer() %>%
-      e_charts(year) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
       e_line(cost_per_qaly_gained, name = "Cost per QALY gained") %>%
       e_line(cumulative_averted, name = "Cumulative QALYs", y_index = 1) %>%
       e_line(cost_per_qaly_gained_monetised, name = "ICER") %>%
       e_format_y_axis(suffix = "£/QALY") %>%
+      e_y_axis(name = "QALYs",y_index = 1 ) %>%
       e_tooltip() %>%
       e_grid(containLabel = T) %>%
       e_theme('walden')
@@ -2382,28 +2817,32 @@ server <- function(input, output, session) {
 
   output$multimorbidity_chart <- renderEcharts4r({
     output_df() %>%
+      select(-c(1,multimorbidity,275)) |>
+      add_multimorbidity_fn() |>
       group_by(year,run,intervention) %>%
       summarise(multimorbidity = mean(multimorbidity,na.rm=T)) %>%
       group_by(year,intervention) %>%
       summarise(multimorbidity = mean(multimorbidity,na.rm=T)) %>%
       mutate(year = as.character(year)) %>%
       group_by(intervention) %>%
-      e_charts(year) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
       e_line(multimorbidity) %>%
-      e_tooltip() %>%
+      e_tooltip(backgroundColor='white') %>%
       e_grid(containLabel = T) %>%
-      e_theme('London')
+      e_theme('shine')
   })
 
   output$cmms_chart <- renderEcharts4r({
     output_df() %>%
+      select(-cmms) |> 
+      compute_cmms() %>%
       group_by(year,run,intervention) %>%
       summarise(cmms = mean(cmms,na.rm=T)) %>%
       group_by(year,intervention) %>%
       summarise(cmms = mean(cmms,na.rm=T)) %>%
       mutate(year = as.character(year)) %>%
       group_by(intervention) %>%
-      e_charts(year) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
       e_line(cmms) %>%
       e_tooltip(backgroundColor = 'white') %>%
       e_grid(containLabel = T) %>%
@@ -2411,11 +2850,17 @@ server <- function(input, output, session) {
   })
 
   sick_days_df <- reactive({
-    sick_days_fn( as.data.table(output_df()))
+    
+    # sick_days_fn( as.data.table(output_df()))
+    lost_productivity_estimator(output_df())
+    
     })
 
   bed_days_df <- reactive({
-    bed_days_fn(as.data.table(output_df()))
+    
+    # bed_days_fn(as.data.table(output_df()))
+    bed_days_estimator(output_df(),stats2223_agg)
+    
     })
 
   output$hospital_admissions_chart <- renderEcharts4r({
@@ -2431,11 +2876,61 @@ server <- function(input, output, session) {
       ) %>%
       mutate(year = as.character(year)) %>%
       group_by(intervention) %>%
-      e_charts(year) %>%
-      e_line(emergency_admissions, name = "Emergency Admissions") %>%
-      e_line(admissions, name = "Admissions ", y_index = 1) %>%
-      e_line(bed_days, name = "Bed days") %>%
-      e_format_y_axis(suffix = "Count") %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
+      # e_line(emergency_admissions, name = "Emergency Admissions") %>%
+      # e_line(admissions, name = "Admissions ", y_index = 1) %>%
+      e_line(bed_days) %>% #, name = "Bed days"
+      e_grid(top = '0%') |> 
+      
+      e_tooltip() %>%
+      e_grid(containLabel = T) %>%
+      e_theme('westeros')
+  })
+  
+  
+  output$hospital_admissions_chart1 <- renderEcharts4r({
+    # print(bed_days_df())
+    # print(class(bed_days_df()))
+    
+    bed_days_df() %>%
+      group_by(year,intervention) %>%
+      summarise(
+        emergency_admissions = sum(emergency_admissions, na.rm =T),
+        admissions = sum(admissions, na.rm =T),
+        bed_days = sum(bed_days, na.rm =T)
+      ) %>%
+      mutate(year = as.character(year)) %>%
+      group_by(intervention) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
+      e_line(emergency_admissions) %>% #, name = "Emergency Admissions"
+      # e_line(admissions, name = "Admissions ", y_index = 1) %>%
+      # e_line(bed_days, name = "Bed days") %>%
+      e_grid(top = '0%') |> 
+      
+      e_tooltip() %>%
+      e_grid(containLabel = T) %>%
+      e_theme('westeros')
+  })
+  
+  output$hospital_admissions_chart2 <- renderEcharts4r({
+    # print(bed_days_df())
+    # print(class(bed_days_df()))
+    
+    bed_days_df() %>%
+      group_by(year,intervention) %>%
+      summarise(
+        emergency_admissions = sum(emergency_admissions, na.rm =T),
+        admissions = sum(admissions, na.rm =T),
+        bed_days = sum(bed_days, na.rm =T)
+      ) %>%
+      mutate(year = as.character(year)) %>%
+      group_by(intervention) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
+      # e_line(emergency_admissions, name = "Emergency Admissions") %>%
+      e_line(admissions) %>% # y_index = 1, name = "Admissions ",
+      # e_line(bed_days, name = "Bed days") %>%
+      e_grid(top = '0%') |> 
+      
       e_tooltip() %>%
       e_grid(containLabel = T) %>%
       e_theme('westeros')
@@ -2453,13 +2948,67 @@ server <- function(input, output, session) {
         sick_spells = sum(sick_spells, na.rm =T)
         ) %>%
       mutate(year = as.character(year)) %>%
+      group_by(year) |> 
+      mutate(averted = c(last(sick_spells) - first(sick_spells),NA )) |> 
       group_by(intervention) %>%
-      e_charts(year) %>%
-      e_line(days_lost, name = "Days lost") %>%
-      e_line(cost, name = "cost", y_index = 1) %>%
-      e_line(sick_spells, name = "Sick spells") %>%
+      e_charts(year, name = 'fddd', emphasis = list(focus = "series")) %>%
+      # e_line(days_lost, name = "Days lost") %>%
+      # e_line(cost, name = "cost", y_index = 1) %>%
+      e_line(sick_spells) %>% #, name = "Sick spells"
+      e_format_y_axis(y_index = 1, suffix = "spells") %>%
+      e_bar(name = 'averted', averted) |> 
+      # e_format_y_axis(index = 2, suffix = "Count") %>%
+      e_grid(top = '0%') |> 
+      e_tooltip() %>%
+      e_grid(containLabel = T) %>%
+      e_theme('westeros')
+  })
+  
+  output$illness_chart1 <- renderEcharts4r({
+    
+    # print(sick_days_df())
+    
+    sick_days_df() %>%
+      group_by(year,intervention) %>%
+      summarise(
+        days_lost = sum(days_lost, na.rm =T),
+        cost = sum(cost, na.rm =T),
+        sick_spells = sum(sick_spells, na.rm =T)
+      ) %>%
+      mutate(year = as.character(year)) %>%
+      group_by(intervention) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
+      # e_line(days_lost, name = "Days lost") %>%
+      e_line(cost) %>% # name = "cost",
+      # e_line(sick_spells, name = "Sick spells") %>%
       e_format_y_axis(y_index = 1, suffix = "£") %>%
-      e_format_y_axis(index = 2, suffix = "Count") %>%
+      # e_format_y_axis(index = 2, suffix = "Count") %>%
+      e_grid(top = '0%') |> 
+      
+      e_tooltip(trigger = 'axis') %>%
+      e_grid(containLabel = T) %>%
+      e_theme('westeros')
+  })
+  
+  output$illness_chart2 <- renderEcharts4r({
+      
+
+    sick_days_df() %>%
+      group_by(year,intervention) %>%
+      summarise(
+        days_lost = sum(days_lost, na.rm =T),
+        cost = sum(cost, na.rm =T),
+        sick_spells = sum(sick_spells, na.rm =T)
+      ) %>%
+      mutate(year = as.character(year)) %>%
+      group_by(intervention) %>%
+      e_charts(year, emphasis = list(focus = "series")) %>%
+      e_line(days_lost) %>% #, name = "Days lost"
+      # e_line(cost, name = "cost", y_index = 1) %>%
+      # e_line(sick_spells, name = "Sick spells") %>%
+      e_format_y_axis(y_index = 1, suffix = "Days") %>%
+      # e_format_y_axis(index = 2, suffix = "Count") %>%
+      e_grid(top = '0%') |> 
       
       e_tooltip() %>%
       e_grid(containLabel = T) %>%
@@ -2471,7 +3020,7 @@ server <- function(input, output, session) {
   yll <- calculate_daly_yll(as.data.table(output_df()))
 
   yld <- yld[disease == 'combined_dw',]
-  yll <- yll[death_reason != 'death_reason', .(yll=sum(yll)), by= .(intervention,year)]
+  yll <- yll[death_reason != 'death_reason', .(yll = sum(yll)), by = .(intervention,year)]
 
   DALYS <- yld[yll, on = c('intervention','year'),
                `:=` (yll = i.yll)]
@@ -2487,17 +3036,174 @@ server <- function(input, output, session) {
   ]
 
   DALYS[popp,on = c('intervention','year')
-  ][,year := as.character(year)] %>%
-    mutate(daly=daly/N) %>%
-    group_by(intervention) %>%
-    e_charts(year) %>%
-    e_line(daly,) %>%
-    e_title(subtext = 'DALYs per Capita')
+  ][,year := as.character(year)] #%>%
+    # mutate(daly=daly/N) %>%
+    # group_by(intervention) %>%
+    # e_charts(year) %>%
+    # e_line(daly) %>%
+    # e_tooltip() |> 
+    # e_title(subtext = 'DALYs per Capita')
   })
   
      output$daly_chart <- renderEcharts4r({
-       daly_df()
+       daly_df() %>%
+         mutate(daly=daly/N) %>%
+         group_by(intervention) %>%
+         e_charts(year, emphasis = list(focus = "series")) %>%
+         e_line(daly) %>%
+         e_tooltip(trigger = 'axis') |> 
+         e_title(subtext = 'DALYs per Capita')
        })
+     
+     
+     output$daly_chart_averted <- renderEcharts4r({
+       daly_df() %>%
+         mutate(daly=daly/N) %>%
+         group_by(year) %>%
+         mutate(averted = first(daly)-last(daly)) |> 
+         ungroup() |> 
+         e_charts(year, emphasis = list(focus = "series")) %>%
+         e_bar(averted,legend = F) %>%
+         e_tooltip() |> 
+         e_visual_map(type = 'piecewise',orient = 'horizontal',
+                      pieces = list(
+                        list(gt= 0,
+                             # lte= 50,
+                             color= 'rgb(200,0,0)'# '#ffcdd2'
+                        ),
+                        list(lte= 0,
+                             # lte= 50,
+                             color= 'steelblue'
+                        ))
+                      )|> 
+         e_title(subtext = 'DALYs per Capita averted')
+     })
+     
+     output$daly_chart_composition <- renderEcharts4r({
+       
+       daly_df()  |>
+       filter(intervention == 'non-intervention') |> 
+       mutate(year = as.character(year)) |> 
+       mutate( yll = yll*model_specification$population$scale_down_factor)  |> 
+       mutate(daly = yll + total_dw) |> 
+       e_charts(year) |>
+       e_bar(yll,name = 'Years of Life lost', stack = 'f') |>
+       e_bar(total_dw,name = 'Years of Life Disabled', stack = 'f') |> 
+       e_line(daly,name = 'DALYs') |> 
+       e_tooltip()
+     })
+     
+     
+     output$disease_cost_chart <- renderEcharts4r({
+       print(costs())
+       
+       as.data.table(costs())[,.(total_cost = sum(total_cost)), by = .(intervention,year)
+       ][,year := as.character(year)     ] |> 
+         group_by(intervention) |> 
+         e_charts(year,emphasis = list(focus = 'series')) |> 
+         e_line(total_cost) |> 
+         e_tooltip(
+           trigger = "axis",
+           formatter = e_tooltip_pointer_formatter(
+             style = "currency",
+             digits = 2,
+             locale = NULL,
+             currency = "GBP"
+           )
+         ) |>
+         e_format_y_axis(suffix = "£")
+         
+     })
+     
+     
+     output$disease_cost_chart_saved <- renderEcharts4r({
+       
+       costs()[,.(total_cost = sum(total_cost)), by = .(intervention,year)
+       ][,year := as.character(year)     ] |> 
+         group_by(year) |> 
+         mutate(saved = first(total_cost) - last(total_cost)) |> 
+         filter(row_number()==1) |> 
+         # group_by(intervention) |> 
+         ungroup() |> 
+         e_charts(year,emphasis = list(focus = 'series')) |> 
+         e_bar(saved) |> 
+         e_tooltip(
+           trigger = "axis",
+           backgroundColor = 'white',
+           formatter = e_tooltip_pointer_formatter(
+             style = "currency",
+             digits = 2,
+             locale = NULL,
+             currency = "GBP"
+           )
+         ) |>
+         e_format_y_axis(suffix = "£") |>
+         e_theme('london')
+       
+       
+     })
+     
+     output$disease_cost_breakdown <- renderEcharts4r({
+       
+     costs()[intervention == 'non-intervention',
+     ][,year := as.character(year)     ] |> 
+       group_by(disease) |> 
+       e_charts(year,emphasis = list(focus = 'series')) |> 
+       e_bar(total_cost, stack = 'stack',
+             symbol = 'none') |> 
+       e_tooltip() |> 
+       e_grid(right='30%') |> 
+       e_legend(right=0,orient = 'vertical',type = 'scroll') |> 
+       e_tooltip()
+     })
+     
+     
+     
+     daly_mdm_fn <- reactive({
+       
+       yld_mdm <- daly_yld_fn(as.data.table(output_df()),group_vars = 'mdm_quintile_soa_name')
+       yll_mdm <- calculate_daly_yll(as.data.table(output_df()),group_vars = 'mdm_quintile_soa_name')
+       
+       DALYS_mdm <- yld_mdm[yll_mdm, on = c('intervention','year'),
+                            `:=` (yll = i.yll)]
+       
+       DALYS_mdm[, daly := total_dw + yll]
+       
+     })
+     
+     
+    output$daly_chart_mdm <- renderEcharts4r({
+      daly_mdm_fn() %>%
+        mutate(mdm_quintile_soa_name = factor( mdm_quintile_soa_name, 
+                                               labels = c('Least Deprived', 'Quintile 2', 'Quintile 3', 'Quintile 4', 'Most Deprived'),
+                                               levels = c('Least Deprived', 'Quintile 2', 'Quintile 3', 'Quintile 4', 'Most Deprived'),
+                                               ordered = T
+        )) |> 
+        group_by(intervention,mdm_quintile_soa_name) |> 
+        summarise(n = n(), daly = mean(daly)) |> 
+        group_by(intervention) |> 
+        mutate(delta = first(daly) - last(daly)) |> 
+        e_charts(mdm_quintile_soa_name) |> 
+        e_bar(daly) |> 
+        e_tooltip()
+     })
+     
+     output$daly_chart_mdm_averted <- renderEcharts4r({
+       daly_mdm_fn()|> 
+         mutate(mdm_quintile_soa_name = factor( mdm_quintile_soa_name, 
+                                                labels = c('Least Deprived', 'Quintile 2', 'Quintile 3', 'Quintile 4', 'Most Deprived'),
+                                                levels = c('Least Deprived', 'Quintile 2', 'Quintile 3', 'Quintile 4', 'Most Deprived'),
+                                                ordered = T
+         )) |> 
+         group_by(intervention,mdm_quintile_soa_name) |> 
+         summarise(n = n(), daly = mean(daly)) |> 
+         group_by(mdm_quintile_soa_name) |> 
+         summarise(averted = last(daly) - first(daly) ) |> 
+         e_charts(mdm_quintile_soa_name) |> 
+         e_bar(averted) |> 
+         # e_line(delta) |> 
+         e_tooltip()
+     })
   
   #   output$daly_chart <- renderEcharts4r({
   # 
@@ -2734,7 +3440,9 @@ server <- function(input, output, session) {
     }else{
 
       message('no run yet')
-      past_populations
+      # past_populations
+      total_pop <- qread( 'total_pop.qs')
+      
 
     }
 
@@ -2782,10 +3490,10 @@ server <- function(input, output, session) {
 #   #   qsave(simulation_state$past_populations(), "myfile.qs")
 #   # })
 # 
-#   observe({
-#     #print(simulation_state$result())
-#     qsave(simulation_state$results(), "result.qs")
-#   })
+  observe({
+    #print(simulation_state$result())
+    qsave(simulation_state$results(), "result.qs")
+  })
 # 
 #   # df <- reactiveVal({NULL})
 # 
@@ -2801,20 +3509,59 @@ server <- function(input, output, session) {
 
     print(morbidity)
 
-    plot = df[df[[morbidity]]!=0,] %>%
-      count(run, intervention, year) %>%
+    # Build a complete run/intervention/year grid so absent morbidity rows are treated as zero.
+    base_combinations <- df %>%
+      distinct(run, intervention, year)
+
+    morbidity_counts <- df[df[[morbidity]] != 0, ] %>%
+      count(run, intervention, year, name = "n")
+
+    plot = base_combinations %>%
+      left_join(morbidity_counts, by = c("run", "intervention", "year")) %>%
+      mutate(n = replace_na(n, 0)) %>%
       group_by(year , intervention) %>%
       summarise(n = mean(n)) %>%
       mutate(year = as.character(year),
              n = n*model_specification$population$scale_down_factor) %>%
       group_by(intervention) %>%
-      e_charts(year) %>%
+      e_charts(year, emphasis = list(focus = 'series')) %>%
       e_line(n) %>%
       e_tooltip(trigger = "axis", confine=T,backgroundColor = 'white', ) %>%
       e_grid(containLabel = T) %>%
-      e_theme("shine") %>%
+      # e_theme("shine") %>%
+      e_theme('roma') |> 
       e_y_axis(name = "Count")
 
+    # return(plot)
+  }
+  
+  plot_outputs_incidence <- function(df, morbidity = 'stroke') {
+    
+    print(morbidity)
+
+    # Build a complete run/intervention/year grid so absent incidence rows are treated as zero.
+    base_combinations <- df %>%
+      distinct(run, intervention, year)
+
+    morbidity_counts <- df[df[[morbidity]] == df[['year']], ] %>%
+      count(run, intervention, year, name = "n")
+    
+    plot = base_combinations %>%
+      left_join(morbidity_counts, by = c("run", "intervention", "year")) %>%
+      mutate(n = replace_na(n, 0)) %>%
+      group_by(year , intervention) %>%
+      summarise(n = mean(n)) %>%
+      mutate(year = as.character(year),
+             n = n*model_specification$population$scale_down_factor) %>%
+      group_by(intervention) %>%
+      e_charts(year, emphasis = list(focus = 'series')) %>%
+                 e_bar(n) %>%
+      e_tooltip(trigger = "axis", confine=T,backgroundColor = 'white', ) %>%
+      e_grid(containLabel = T) %>%
+      # e_theme("shine") %>%
+      e_theme('roma') |> 
+      e_y_axis(name = "Count")
+    
     # return(plot)
   }
 # 
@@ -3096,574 +3843,726 @@ server <- function(input, output, session) {
   #   # cat(simulation_state)
   #   qsave(simulation_state$past_populations, "myfile.qs")
   #   print('--------------')
-  # })
+  # })  
   
+
+  updateSelectizeInput(session, 
+                       inputId='disease', 
+                       selected = 'Stroke',
+                       choices = y
+                       # choices = pop %>%
+                       #   count(age20) %>%
+                       #   t() %>%
+                       #   as.data.frame() %>%
+                       #   setNames(format(
+                       #     big.mark=",",
+                       #     as.numeric(.[2,])*10 #model_specification$population$scale_down_factor
+                       #   )) %>%
+                       #   sapply(FUN = function(x){
+                       #     list(
+                       #       x[[1]]
+                       #       )})
+  )
+  
+  output$selected_disease <- renderText({
+    req(input$disease)
+    
+    # print(paste("Selected:", input$disease))
+    
+    # risk_matrix$disease[str_detect(pattern = risk_matrix$disease_pretty_name, string = input$disease)]    
+    risk_matrix$disease_pretty_name [str_detect(pattern = risk_matrix$disease_pretty_name, string = input$disease)]
+
+    
+    # paste("Selected:", input$disease)
+  })
+  
+  output$selected_disease1 <- renderText({
+    
+    req(input$disease)
+    risk_matrix$disease_pretty_name [str_detect(pattern = risk_matrix$disease_pretty_name, string = input$disease)]
+
+  })
+  
+  output$selected_prevalence_chart <- renderEcharts4r({
+    df = output_df()# simulation_state$results()
+    disease = risk_matrix$disease[str_detect(pattern = risk_matrix$disease_pretty_name, string = input$disease)]
+    plot_outputs_prevalence(df, disease)
+  })
+  
+  output$selected_incidence_chart <- renderEcharts4r({
+    df = output_df()# simulation_state$results()
+    disease = risk_matrix$disease[str_detect(pattern = risk_matrix$disease_pretty_name, string = input$disease)]
+    plot_outputs_incidence(df, disease)
+    
+  })
+  
+  output$side_emergency_admissions <- renderText({
+    sick_days_df() %>%
+      group_by(year, intervention) %>%
+      summarise(
+        # days_lost = sum(days_lost, na.rm =T),
+        # cost = sum(cost, na.rm =T),
+        sick_spells = sum(sick_spells, na.rm =T)
+      ) %>%
+      ungroup() |> 
+      filter(year == min(year)) %>%
+      filter(intervention == 'non-intervention') |> 
+      pull(sick_spells)|> 
+      format(big.mark = ",")
+      
+      })
+  
+  output$side_cost <- renderText({
+    # validate(
+    #   need(
+    #     !is.null(cost_values,'Apply Intervention')
+    #   )
+    
+    total <- cost_values$flat_fixed_cost +
+      (cost_values$per_person_per_year # * model_specification$population$scale_down_factor
+      ) + # Assuming population size
+      (cost_values$per_person #* model_specification$population$scale_down_factor
+      ) +
+      cost_values$per_year
+    
+    paste0(" £",
+           format(total, big.mark = ",")
+           )
+    
+  })
+  
+  output$side_multimorbidity <- renderText({
+    
+    output_df() %>%
+      select(-c(1,multimorbidity,275)) |>
+      add_multimorbidity_fn() |>
+      group_by(year,run,intervention) %>%
+      summarise(multimorbidity = mean(multimorbidity,na.rm=T)) %>%
+      group_by(year,intervention) %>%
+      summarise(multimorbidity = sum(multimorbidity,na.rm=T)) %>%
+      ungroup() |> 
+      filter(year == min(year)) %>%
+      filter(intervention =='non-intervention')   |> 
+      pull(multimorbidity)|> 
+      format(big.mark = ",")
+    
+    })
+  
+  output$side_dalys <- renderText({
+          daly_df()  |>
+       filter(intervention == 'non-intervention') |> 
+       filter(year == min(year)) |> 
+       mutate( yll = yll * model_specification$population$scale_down_factor)  |> 
+       mutate(daly = yll + total_dw) |> 
+      pull(daly) |> 
+      format(big.mark = ",")
+    
+  })
   
   
 #End specify intervention ----
-#
-#   output$custom <- renderLeaflet({ 
-#     leaflet() %>% 
-#       addTiles()
-#     })
-#   
-#   
-  output$geo_sunburst <- renderEcharts4r({geo_sunburst})
-  output$geo_treemap <- renderEcharts4r({geo_treemap })
 
-  # observe({
+#   start commented out production data ----
+#   output$geo_sunburst <- renderEcharts4r({geo_sunburst})
+#   output$geo_treemap <- renderEcharts4r({geo_treemap })
 # 
-  # print(input$geo_sunburst_clicked_data)
-  # print(input$geo_sunburst_clicked_data_value)
-  # print(input$geo_sunburst_clicked_row)
-  # print(input$geo_sunburst_clicked_serie)
-  #
-  # print(input$geo_treemap_clicked_data)
-  # print(input$geo_treemap_clicked_data_value)
-  # print(input$geo_treemap_clicked_row)
-  # print(input$geo_treemap_clicked_serie)
-
-  # })
-
-
+#   # observe({
+# # 
+#   # print(input$geo_sunburst_clicked_data)
+#   # print(input$geo_sunburst_clicked_data_value)
+#   # print(input$geo_sunburst_clicked_row)
+#   # print(input$geo_sunburst_clicked_serie)
+#   #
+#   # print(input$geo_treemap_clicked_data)
+#   # print(input$geo_treemap_clicked_data_value)
+#   # print(input$geo_treemap_clicked_row)
+#   # print(input$geo_treemap_clicked_serie)
+# 
+#   # })
+# 
+# 
   # Reactive data source for pivot module
+  # population_data <- reactive({
+  #   # df <- read.csv("./populations/test_population.csv", stringsAsFactors = FALSE)
+  #   df <- read.fst('./populations/k20_population.fst')
+  # 
+  #   # Convert logical health conditions to factors for better pivoting
+  #   health_cols <- c("stroke", "chd", "diabetes", "dementia", "heart_failure",
+  #                    "atrial_fibrillation", "hypertension", "chronic_kidney_disease")
+  #   df[health_cols] <- lapply(df[health_cols], function(x) factor(ifelse(x, "Yes", "No")))
+  # 
+  #   # Ensure proper factor ordering for age groups
+  #   if("age_risk" %in% names(df)) {
+  #     df$age_risk <- factor(df$age_risk, levels = c("0-15", "16-34", "35-44", "45-54", "55-64", "65-74", "75-110"))
+  #   }
+  # 
+  #   # Convert BMI to factor with proper ordering
+  #   if("bmi" %in% names(df)) {
+  #     df$bmi <- factor(df$bmi, levels = c("normal", "overweight", "obese"))
+  #   }
+  # 
+  #   return(df)
+  # })
+  
+  
   population_data <- reactive({
     # df <- read.csv("./populations/test_population.csv", stringsAsFactors = FALSE)
-    df <- read.fst('./populations/k20_population.fst')
-
-    # Convert logical health conditions to factors for better pivoting
-    health_cols <- c("stroke", "chd", "diabetes", "dementia", "heart_failure",
-                     "atrial_fibrillation", "hypertension", "chronic_kidney_disease")
-    df[health_cols] <- lapply(df[health_cols], function(x) factor(ifelse(x, "Yes", "No")))
-
+    df <- read.fst('./3_pre_main/intermediate_populations/initial_time_zero_population.fst')
+    df <- df |> select(all_of(pivot_columns))
     # Ensure proper factor ordering for age groups
     if("age_risk" %in% names(df)) {
-      df$age_risk <- factor(df$age_risk, levels = c("0-15", "16-34", "35-44", "45-54", "55-64", "65-74", "75-110"))
+      df$age20 <- factor(df$age20, levels = c("0-20", "20-40", '40-60','06-80','80-100'))
     }
-
+    
     # Convert BMI to factor with proper ordering
     if("bmi" %in% names(df)) {
       df$bmi <- factor(df$bmi, levels = c("normal", "overweight", "obese"))
     }
-
+    
     return(df)
   })
+  
 
   # Pivot module server ----
   pivot_result <- pivot_module_server("pivot_reports", data = population_data)
 
-  # output$custom <- renderLeaflet({
-  #
-  #   leaflet(elementId = 'map1') %>%
-  #     addTiles() %>%
-  #     setView(lng = -5.9576, lat = 54.904, zoom = 8)
-  #
-  #   })
-
-  output$mymap <- renderLeaflet({
-    leaflet(#width='99%',height='99%',
-      options = leafletOptions(zoomControl = FALSE)
-    ) %>%
-      htmlwidgets::onRender("function(el, x) {
-        //L.control.zoom({ position: 'bottomright' }).addTo(this);
-        var map = this;
-        setTimeout(function() { map.invalidateSize(); }, 100);
-      }") %>%
-      addTiles() %>%
-      setView(lng = -5.9576, lat = 54.904, zoom = 8) %>%
-      # addMarkers(lng = -0.1276, lat = 51.5074, popup = "London") %>%
-
-      addCircles(data = parks,
-                 weight = 15,
-                 # radius = 150,
-                 fillOpacity = 1,
-                 fillColor  = 'mediumseagreen',
-                 fill = F,
-                 opacity=0.5,
-                 color = 'mediumseagreen',
-                 stroke = T,
-                 label = ~name#,
-                 #popup = ~as.character(name)
-      ) %>%
-      addCircles(data = fast_food,
-                 weight = 15,
-                 fillOpacity = 1,
-                 fillColor  = 'steelblue',
-                 fill = F,
-                 opacity=0.5,
-                 color = 'steelblue',
-                 stroke = T,
-                 label = ~name
-      ) %>%
-      addLegend(position = 'topright',
-                colors = c('mediumseagreen','steelblue'),
-                labels = c('Parks','Fast Food Outlets'),
-                opacity = 1
-      ) %>%
-      addPolygons(data = st_as_sfc(
-        st_bbox(c(
-          xmin = -1.796265 + 0.2,
-          ymin = 53.40626 + 0.2,
-          xmax = -10.1239 - 0.2,
-          ymax = 56.34699 - 0.2
-        ), crs = st_crs(4326))
-      ),
-      color = 'black',
-      weight = 2,
-      fill = F,
-      group = 'bbox')
-    # addPolygons(data = isolate(bb()),
-    #             color = 'black',
-    #             weight = 2,
-    #             fill = F)
-
-  })
-
-  observe({
-    print(input$switch)
-    default_val(input$switch)
-  })
-
-  trig= reactiveVal({FALSE})
-
-  observe({
-    x <- isolate(trig())
-    debounced_bounds()
-    if(default_val()==F){
-      trig(!x)
-    }
-  })
-
-  observeEvent(ignoreInit = T, ignoreNULL = T, trig(),{ #debounced_bounds()
-    req(default_val()==F)
-    leafletProxy('mymap')  %>%
-      clearGroup('bbox') %>%
-      addPolygons(data = isolate(bb()),
-                  color = 'black',
-                  weight = 2,
-                  fill = F,group = 'bbox')#%>%
-    # flyTo(lng = -6.1576, lat = 54.704, zoom = 7)
-    # setView(lng = -5.9576, lat = 54.904, zoom = 8) %>% %>%
-    # clearShapes() %>
-
-
-  })
-
-  map_filtered_chart <- reactiveVal(pop)
-
-  debounced_bounds <- reactive({
-    req(bb()!= list(ymax = 57.0706,
-                    xmax =  0.2636719,
-                    ymin = 52.19414,
-                    xmin = -12.56836))
-
-    input$mymap_bounds
-  }) %>%
-    debounce(3000)   # 4000 milliseconds = 4 seconds
-
-  bb <- reactiveVal({
-    st_as_sfc(
-      st_bbox(c(
-        xmin = -1.796265 + 0.2,
-        ymin = 53.40626 + 0.2,
-        xmax = -10.1239 - 0.2,
-        ymax = 56.34699 - 0.2
-      ), crs = st_crs(4326))
-    )
-  })
-
-  default_val <- reactiveVal({FALSE})
-  # 2. Replace input$mymap_bounds with debounced_bounds() in your observeEvent
-
-  observeEvent(debounced_bounds() , { #debounced_bounds()
-    req(debounced_bounds())
-    req(default_val()==F)
-
-    # print(bb())
-    req(bb()!=   st_as_sfc(
-      st_bbox(c(ymax = 57.0706,
-                xmax =  0.2636719,
-                ymin = 52.19414,
-                xmin = -12.56836))))
-
-
-
-    # print('printing bounds')
-    # print(input$mymap_bounds)
-
-    ytol = abs(input$mymap_bounds$south - input$mymap_bounds$north)/10
-    xtol = abs(input$mymap_bounds$west - input$mymap_bounds$east)/10
-
-
-    bbox_poly <- st_as_sfc(
-      st_bbox(c(
-        xmin = input$mymap_bounds$west + xtol,
-        ymin = input$mymap_bounds$south + ytol,
-        xmax = input$mymap_bounds$east - xtol,
-        ymax = input$mymap_bounds$north - ytol
-      ), crs = st_crs(4326))
-    )
-
-    bb(bbox_poly)
-    # print(bbox_poly)
-
-    # req(input$mymap_bounds$west != input$mymap_bounds$west)
-    # req(input$mymap_bounds$north != input$mymap_bounds$south)
-
-    inside_mat <- st_within(csv_pts_wgs84, bbox_poly, sparse = FALSE)
-    #st_within(csv_pts_wgs84, x, sparse = FALSE)
-
-    csv_pts_wgs84 <- csv_pts_wgs84 %>%
-      mutate(in_bbox = as.logical(inside_mat[, 1]))
-
-    dz_in_bbox <- csv_pts_wgs84 %>%
-      filter(in_bbox)
-
-    # dz_in_bbox$DZ2021_code
-    # dz_in_bbox$DZ2021_name
-
-    # print(head(pop))
-    # print(head(dz_in_bbox$DZ2021_code))
-    # print(head(map_filtered_chart()))
-
-    # map_filtered_chart(pop %>%
-    #                      filter(dz_id %in% dz_in_bbox$DZ2021_code ))
-
-    # print(dz_in_bbox)
-    # print(pop$sdz_code)
-    # print(dz_in_bbox$DZ2021_code)
-
-    map_filtered_chart(pop %>%
-                         filter(sdz_code %in% dz_in_bbox$SDZ2021_code ))
-
-    # print('##############')
-    # print(head(map_filtered_chart()))
-    # print('##############')
-  })
-
-  output$group_echarts <- renderEcharts4r({
-    map_filtered_chart() %>%
-      group_by(Urban_status) %>%
-      summarise(count = n() ) %>%
-      e_charts(Urban_status) %>%
-      echarts4r::e_tooltip(trigger = "axis",confine = T) %>%
-      e_bar(count) %>%
-      e_title("Population by Urban Status") %>%
-      e_theme('walden') %>%
-      e_grid(containLabel = TRUE)
-  })
-
-  output$excedance_bmi <- renderEcharts4r({
-
-    ## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
-
-    expect <- pop %>%
-      count(bmi,name = 'bmi_count') %>%
-      add_count(wt = bmi_count, name = 'total_count') %>%
-      mutate( expect = bmi_count/total_count )
-
-    dat <-count(map_filtered_chart(),bmi, name = 'filter') %>%
-      add_count(wt = filter,name = 'filtered_count') %>%
-      mutate( actual = filter/filtered_count )
-
-    expect <- left_join(expect, dat) %>%
-      mutate(exceed = actual - expect) %>%
-      mutate(isPos = (exceed>0)) %>%
-      filter(!is.na(bmi)) %>%
-      filter(bmi!='normal')
-
-    # print(expect)
-    expect %>%
-      # group_by(isPos) %>%
-      echarts4r::e_charts(bmi,textStyle = list( fontSize=9)) %>%
-      echarts4r::e_bar(exceed) %>%
-      e_visual_map(type = 'piecewise', orient = 'horizontal',
-                   pieces = list(
-                     list(gt= 0,
-                          # lte= 50,
-                          color= '#ffcdd2'),
-                     list(lte= 0,
-                          # lte= 50,
-                          color= '#bbdefb'))
-      ) %>%
-      # )) %>%
-      # e_color((c("#ffcdd2",
-      #            "#bbdefb"
-      #            ))) %>%
-      e_x_axis(show = FALSE) %>%
-      # e_y_axis(show = FALSE) %>%
-      #echarts4r::e_title("BMI distribution (filtered)") %>%
-      echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
-      e_theme('walden') %>%
-      echarts4r::e_title( text = "BMI Excedance", subtext = "Where values of BMI exceed expected") %>%
-      e_legend(show=F) %>%
-      e_y_axis(formatter = e_axis_formatter("percent", digits = 0)) %>%
-      # e_color(c('#2AFEB7','yellow')) %>%
-      #echarts4r::e_x_axis(name = "BMI band") %>%
-      # echarts4r::e_y_axis(name = "People") %>%
-      e_grid(containLabel = TRUE) # top = 40, right = 20, bottom = 40, left = 50)
-  })
-
-  # exceedence_age
-  output$excedance_age <- renderEcharts4r({
-
-    ## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
-
-    expect <- pop %>%
-      count(age10,bmi, name = 'bmi_count') %>%
-      add_count(age10, wt = bmi_count, name = 'total_count') %>%
-      mutate( expect = bmi_count/total_count )
-
-    dat <-count(map_filtered_chart(), bmi, age10, name = 'filter') %>%
-      add_count(age10,wt = filter,name = 'filtered_count') %>%
-      mutate( actual = filter/filtered_count )
-
-    expect <- left_join(expect, dat) %>%
-      mutate(exceed = actual - expect) %>%
-      mutate(isPos = (exceed>0)) %>%
-      filter(!is.na(bmi)) %>%
-      filter(bmi!='normal')
-
-    # print(expect)
-    expect %>%
-      group_by(age10) %>%
-      echarts4r::e_charts(bmi,textStyle = list( fontSize=9)) %>%
-      echarts4r::e_bar(exceed) %>%
-      e_visual_map(type = 'piecewise',orient = 'horizontal',
-                   pieces = list(
-                     list(gt= 0,
-                          # lte= 50,
-                          color= '#ffcdd2'),
-                     list(lte= 0,
-                          # lte= 50,
-                          color= '#bbdefb'))
-      ) %>%
-      # )) %>%
-      # e_color((c("#ffcdd2",
-      #            "#bbdefb"
-      #            ))) %>%
-      e_x_axis(show = FALSE) %>%
-      # e_y_axis(show = FALSE) %>%
-      #echarts4r::e_title("BMI distribution (filtered)") %>%
-      echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
-      e_theme('walden') %>%
-      echarts4r::e_title( text = "BMI Age Excedance", subtext = "Where values of BMI exceed expected") %>%
-      e_legend(show=F) %>%
-      e_y_axis(formatter = e_axis_formatter("percent", digits = 0)) %>%       # e_color(c('#2AFEB7','yellow')) %>%
-
-      #echarts4r::e_x_axis(name = "BMI band") %>%
-      # echarts4r::e_y_axis(name = "People") %>%
-      e_grid(containLabel = TRUE) # top = 40, right = 20, bottom = 40, left = 50)
-  })
-
-  output$excedance_bmi_deprivation <- renderEcharts4r({
-    ## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
-
-    expect <- pop %>%
-      count(bmi,mdm_quintile_soa_name, name = 'bmi_count') %>%
-      add_count(mdm_quintile_soa_name, wt = bmi_count, name = 'total_count') %>%
-      mutate( expect = bmi_count/total_count )
-
-    dat <-count(map_filtered_chart(),bmi, mdm_quintile_soa_name, name = 'filter') %>%
-      add_count(mdm_quintile_soa_name, wt = filter,name = 'filtered_count') %>%
-      mutate( actual = filter/filtered_count )
-
-    expect <- left_join(expect, dat) %>%
-      mutate(exceed = actual - expect) %>%
-      mutate(isPos = (exceed>0)) %>%
-      filter(!is.na(bmi))
-
-    # print(expect)
-    expect %>%
-      group_by(mdm_quintile_soa_name) %>%
-      echarts4r::e_charts(bmi,textStyle = list( fontSize=9)) %>%
-      echarts4r::e_bar(exceed) %>%
-      echarts4r::e_title( text = "BMI Deprivation Exceedance", subtext = "Where values of BMI exceed expected") %>%
-      e_visual_map(type = 'piecewise',orient = 'horizontal',
-                   pieces = list(
-                     list(gt= 0,
-                          # lte= 50,
-                          color= '#ffcdd2'),
-                     list(lte= 0,
-                          # lte= 50,
-                          color= '#bbdefb'))
-      ) %>%
-      e_x_axis(show = FALSE) %>%
-      e_theme('walden') %>%
-      e_y_axis(formatter = e_axis_formatter("percent", digits = 0)) %>%
-      # e_y_axis(show = FALSE) %>%
-      echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
-      e_legend(show=F) %>%
-      e_grid(containLabel = TRUE)
-  })
-
-
-  # --- charts ---------------------------------------------------------------
-  output$bmi_chart <- renderEcharts4r({
-    dat <- count(map_filtered_chart(),bmi)## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
-    dat %>%
-      echarts4r::e_charts(bmi,height = 190, width='200',textStyle = list( fontSize=9)) %>%
-      echarts4r::e_bar(n, name = "Count") %>%
-      #echarts4r::e_title("BMI distribution (filtered)") %>%
-      echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
-      e_legend(show=F) %>%
-      # e_color(c('#2AFEB7','yellow')) %>%
-      #echarts4r::e_x_axis(name = "BMI band") %>%
-      echarts4r::e_y_axis(name = "People") %>%
-      e_theme('walden') %>%
-      e_grid(containLabel = TRUE) # top = 40, right = 20, bottom = 40, left = 50)
-  })
-
-  output$age_chart <- renderEcharts4r({
-    dat <- count(map_filtered_chart(),age20)##age_counts(); validate(need(nrow(dat) > 0, "Age not available."))
-    dat %>%
-      echarts4r::e_charts(age20,height = 190, width='200') %>%
-      echarts4r::e_bar(n, name = "Count") %>%
-      #echarts4r::e_title("Age bands (filtered)") %>%
-      echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
-      e_legend(show=F) %>%
-      #echarts4r::e_x_axis(name = "Age band") %>%
-      echarts4r::e_y_axis(name = "People") %>%
-      e_legend(show=F) %>%
-      e_theme('walden') %>%
-      #e_color(c('#2AFEB7','yellow')) %>%
-      e_grid(containLabel = TRUE)
-  })
-
-  output$sex_chart <- renderEcharts4r({
-
-    dat <- count(map_filtered_chart(),sex)#sex_counts(); validate(need(nrow(dat) > 0, "Sex not available."))
-    dat %>%
-      group_by(sex) %>%
-      echarts4r::e_charts(sex,height = 190,width='200') %>%
-      echarts4r::e_bar(n) %>%
-      e_legend(show=F) %>%
-      #echarts4r::e_title("Sex split (filtered)", textStyle = list( fontSize=9)) %>%
-      echarts4r::e_tooltip(formatter = "{b}: {c} ({d}%)",confine = T) %>%
-      #e_color(c('#2AFEB7','yellow')) %>%
-      echarts4r::e_grid(containLabel = TRUE) %>%
-      e_text_style(
-        #color = "white",
-        #fontStyle = "italic"
-        textStyle = list(fontSize = 9)
-        ) %>%
-      e_theme('walden')
-  })
-
-  output$depriv_chart <- renderEcharts4r({
-    dat <- count(map_filtered_chart(), mdm_quintile_soa_name)#depriv_counts(); validate(need(nrow(dat) > 0, "Deprivation not available."))
-    # Pick the x column dynamically
-    # xcol <- if ("mdm_quintile_soa_name" %in% names(dat)) "mdm_quintile_soa_name" else "mdm_quintile_soa"
-
-    dat %>%
-      mutate(mdm_quintile_soa_name = factor(mdm_quintile_soa_name,
-                                            levels = c("Most Deprived","Quintile 2","Quintile 3","Quintile 4","Least Deprived"))) %>%
-      arrange(mdm_quintile_soa_name) %>%
-      echarts4r::e_charts(mdm_quintile_soa_name,height = 190,width='200') %>%
-      echarts4r::e_bar(n, name = "Count") %>%
-      e_legend(show = F) %>%
-      #echarts4r::e_title("Deprivation quintile (filtered)",textStyle = list( fontSize=9)) %>%
-      #echarts4r::e_tooltip(trigger = "axis") %>%
-      echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
-      # e_color(c('#2AFEB7','yellow')) %>%
-
-      #echarts4r::e_x_axis(name = "MDM quintile") %>%
-      echarts4r::e_y_axis(name = "People") %>%
-      echarts4r::e_grid(containLabel = TRUE) %>%
-      e_theme('walden')
-  })
-
-  output$qrisk_chart <- renderEcharts4r({
-    dat <- map_filtered_chart() %>%
-      slice_sample(n = 500)
-
-    y_max <- ceiling(max(dat$qrisk_score, na.rm = TRUE))
-    y_max <- max(y_max, 1)  # ensure sensible upper bound
-
-    dat %>%
-      echarts4r::e_charts(id,height = 190,width='200') %>%
-      # points (strip/list)
-      echarts4r::e_scatter(qrisk_percentile,
-                           name = "QRisk",
-                           symbolSize = 6,
-                           large = TRUE,
-                           largeThreshold = 2000,
-                           itemStyle=list(opacity=0.2)
-      ) %>%
-      # mean & median reference lines
-      echarts4r::e_mark_line(data = list(
-        list(type = "average", name = "Mean"),
-        list(type = "median", name = "Median")
-      )) %>%
-      # axes & layout
-      echarts4r::e_y_axis(
-        name = "QRisk (%)",
-        min = 0, max = y_max,
-        axisLabel = list(formatter = "{value}%")
-      ) %>%
-      echarts4r::e_x_axis(show = FALSE) %>%
-      echarts4r::e_grid(containLabel = TRUE) %>%
-      e_theme('walden')
-
-  })
-
-  output$qrisk_chart1 <- renderEcharts4r({
-    dat <- map_filtered_chart() %>%
-      slice_sample(n = 500)
-
-    dat %>%
-      filter(age>25) %>%
-      filter(!is.na(bmi)) %>%
-      group_by(bmi) %>%
-      e_charts(height=290) %>%
-      e_density(qrisk_percentile,breaks=5) %>%
-
-      e_mark_line(title = 'Baseline',
-                  data = list(
-                    type = "average",
-                    name = "Average"
-                  )) %>%
-      e_theme('walden')%>%
-      echarts4r::e_grid(containLabel = TRUE)
-
-  })
-
-  # --- headline card (optional) --------------------------------------------
-  output$headline_count <- renderText({
-
-    format(nrow(map_filtered_chart())*10, big.mark = ",")
-  })
-
-  output$qrisk_average <- renderText({
-    # print('##############')
-    # print(head(map_filtered_chart()))
-    # print('##############')
-    signif(digits = 3 ,mean(map_filtered_chart()$qrisk_score)) #qrisk_percentile
-  })
-
-  output$areaPer100k <- renderText({
-    inside <- st_within(parks, bb(), sparse = FALSE)
-    sum(parks$area[inside])/nrow(map_filtered_chart()) * 100000/1000
-  })
-
-  output$parkPer100k <- renderText({
-    inside <- st_within(parks, bb(), sparse = FALSE)
-    nrow(parks[inside,])/nrow(map_filtered_chart()) * 100000
-  })
-
-  output$ffPer100k <- renderText({
-    inside <- st_within(fast_food, bb(), sparse = FALSE)
-    nrow(fast_food[inside,])/nrow(map_filtered_chart()) * 100000
-
-  })
-
-  output$overweight_percentage <- renderText({
-    x <-  map_filtered_chart() %>%
-      summarise(ow = sum(bmi%in%c('overweight','obese')), n=n()) %>%
-      mutate(pw_perc = ow/n) %>%
-      pull(pw_perc)
-    signif(digits = 2, x*100)
-  })
+#   output$mymap <- renderLeaflet({
+#     leaflet(#width='99%',height='99%',
+#       options = leafletOptions(zoomControl = FALSE)
+#     ) %>%
+#       htmlwidgets::onRender("function(el, x) {
+#         //L.control.zoom({ position: 'bottomright' }).addTo(this);
+#         var map = this;
+#         setTimeout(function() { map.invalidateSize(); }, 100);
+#       }") %>%
+#       addTiles() %>%
+#       setView(lng = -5.9576, lat = 54.904, zoom = 8) %>%
+#       # addMarkers(lng = -0.1276, lat = 51.5074, popup = "London") %>%
+# 
+#       addCircles(data = parks,
+#                  weight = 15,
+#                  # radius = 150,
+#                  fillOpacity = 1,
+#                  fillColor  = 'mediumseagreen',
+#                  fill = F,
+#                  opacity=0.5,
+#                  color = 'mediumseagreen',
+#                  stroke = T,
+#                  label = ~name#,
+#                  #popup = ~as.character(name)
+#       ) %>%
+#       addCircles(data = fast_food,
+#                  weight = 15,
+#                  fillOpacity = 1,
+#                  fillColor  = 'steelblue',
+#                  fill = F,
+#                  opacity=0.5,
+#                  color = 'steelblue',
+#                  stroke = T,
+#                  label = ~name
+#       ) %>%
+#       addLegend(position = 'topright',
+#                 colors = c('mediumseagreen','steelblue'),
+#                 labels = c('Parks','Fast Food Outlets'),
+#                 opacity = 1
+#       ) %>%
+#       addPolygons(data = st_as_sfc(
+#         st_bbox(c(
+#           xmin = -1.796265 + 0.2,
+#           ymin = 53.40626 + 0.2,
+#           xmax = -10.1239 - 0.2,
+#           ymax = 56.34699 - 0.2
+#         ), crs = st_crs(4326))
+#       ),
+#       color = 'black',
+#       weight = 2,
+#       fill = F,
+#       group = 'bbox')
+#     # addPolygons(data = isolate(bb()),
+#     #             color = 'black',
+#     #             weight = 2,
+#     #             fill = F)
+# 
+#   })
+# 
+#   observe({
+#     print(input$switch)
+#     default_val(input$switch)
+#   })
+# 
+#   trig= reactiveVal({FALSE})
+# 
+#   observe({
+#     x <- isolate(trig())
+#     debounced_bounds()
+#     if(default_val()==F){
+#       trig(!x)
+#     }
+#   })
+# 
+#   observeEvent(ignoreInit = T, ignoreNULL = T, trig(),{ #debounced_bounds()
+#     req(default_val()==F)
+#     leafletProxy('mymap')  %>%
+#       clearGroup('bbox') %>%
+#       addPolygons(data = isolate(bb()),
+#                   color = 'black',
+#                   weight = 2,
+#                   fill = F,group = 'bbox')#%>%
+#     # flyTo(lng = -6.1576, lat = 54.704, zoom = 7)
+#     # setView(lng = -5.9576, lat = 54.904, zoom = 8) %>% %>%
+#     # clearShapes() %>
+# 
+# 
+#   })
+# 
+#   map_filtered_chart <- reactiveVal(pop)
+# 
+#   debounced_bounds <- reactive({
+#     req(bb()!= list(ymax = 57.0706,
+#                     xmax =  0.2636719,
+#                     ymin = 52.19414,
+#                     xmin = -12.56836))
+# 
+#     input$mymap_bounds
+#   }) %>%
+#     debounce(3000)   # 4000 milliseconds = 4 seconds
+# 
+#   bb <- reactiveVal({
+#     st_as_sfc(
+#       st_bbox(c(
+#         xmin = -1.796265 + 0.2,
+#         ymin = 53.40626 + 0.2,
+#         xmax = -10.1239 - 0.2,
+#         ymax = 56.34699 - 0.2
+#       ), crs = st_crs(4326))
+#     )
+#   })
+# 
+#   default_val <- reactiveVal({FALSE})
+#   # 2. Replace input$mymap_bounds with debounced_bounds() in your observeEvent
+# 
+#   observeEvent(debounced_bounds() , { #debounced_bounds()
+#     req(debounced_bounds())
+#     req(default_val()==F)
+#     req(input$mymap_bounds$south != input$mymap_bounds$north)
+#     
+#     # print(bb())
+#     req(bb()!=   st_as_sfc(
+#       st_bbox(c(ymax = 57.0706,
+#                 xmax =  0.2636719,
+#                 ymin = 52.19414,
+#                 xmin = -12.56836))))
+# 
+# 
+# 
+#     # print('printing bounds')
+#     # print(input$mymap_bounds)
+# 
+#     ytol = abs(input$mymap_bounds$south - input$mymap_bounds$north)/10
+#     xtol = abs(input$mymap_bounds$west - input$mymap_bounds$east)/10
+# 
+# 
+#     bbox_poly <- st_as_sfc(
+#       st_bbox(c(
+#         xmin = input$mymap_bounds$west + xtol,
+#         ymin = input$mymap_bounds$south + ytol,
+#         xmax = input$mymap_bounds$east - xtol,
+#         ymax = input$mymap_bounds$north - ytol
+#       ), crs = st_crs(4326))
+#     )
+# 
+#     bb(bbox_poly)
+#     # print(bbox_poly)
+# 
+#     # req(input$mymap_bounds$west != input$mymap_bounds$west)
+#     # req(input$mymap_bounds$north != input$mymap_bounds$south)
+# 
+#     print(bbox_poly)
+#     print(bbox_poly$geometry)
+#     inside_mat <- st_within(csv_pts_wgs84, bbox_poly, sparse = FALSE)
+#     #st_within(csv_pts_wgs84, x, sparse = FALSE)
+# 
+#     csv_pts_wgs84 <- csv_pts_wgs84 %>%
+#       mutate(in_bbox = as.logical(inside_mat[, 1]))
+# 
+#     dz_in_bbox <- csv_pts_wgs84 %>%
+#       filter(in_bbox)
+# 
+#     # dz_in_bbox$DZ2021_code
+#     # dz_in_bbox$DZ2021_name
+# 
+#     # print(head(pop))
+#     # print(head(dz_in_bbox$DZ2021_code))
+#     # print(head(map_filtered_chart()))
+# 
+#     # map_filtered_chart(pop %>%
+#     #                      filter(dz_id %in% dz_in_bbox$DZ2021_code ))
+# 
+#     # print(dz_in_bbox)
+#     # print(pop$sdz_code)
+#     # print(dz_in_bbox$DZ2021_code)
+# 
+#     map_filtered_chart(pop %>%
+#                          filter(sdz_code %in% dz_in_bbox$SDZ2021_code ))
+# 
+#     # print('##############')
+#     # print(head(map_filtered_chart()))
+#     # print('##############')
+#   })
+# 
+#   output$group_echarts <- renderEcharts4r({
+#     map_filtered_chart() %>%
+#       group_by(Urban_status) %>%
+#       summarise(count = n() ) %>%
+#       e_charts(Urban_status) %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine = T) %>%
+#       e_bar(count) %>%
+#       e_title("Population by Urban Status") %>%
+#       e_theme('walden') %>%
+#       e_grid(containLabel = TRUE)
+#   })
+# 
+#   output$excedance_bmi <- renderEcharts4r({
+# 
+#     # bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
+# 
+#     expect <- pop %>%
+#       count(bmi,name = 'bmi_count') %>%
+#       add_count(wt = bmi_count, name = 'total_count') %>%
+#       mutate( expect = bmi_count/total_count )
+# 
+#     dat <-count(map_filtered_chart(),bmi, name = 'filter') %>%
+#       add_count(wt = filter,name = 'filtered_count') %>%
+#       mutate( actual = filter/filtered_count )
+# 
+#     expect <- left_join(expect, dat) %>%
+#       mutate(exceed = actual - expect) %>%
+#       mutate(isPos = (exceed>0)) %>%
+#       filter(!is.na(bmi)) %>%
+#       filter(bmi!='normal')
+# 
+#     # print(expect)
+#     expect %>%
+#       # group_by(isPos) %>%
+#       echarts4r::e_charts(bmi,textStyle = list( fontSize=9)) %>%
+#       echarts4r::e_bar(exceed) %>%
+#       e_visual_map(type = 'piecewise', orient = 'horizontal',
+#                    pieces = list(
+#                      list(gt= 0,
+#                           # lte= 50,
+#                           color= '#ffcdd2'),
+#                      list(lte= 0,
+#                           # lte= 50,
+#                           color= '#bbdefb'))
+#       ) %>%
+#       # )) %>%
+#       # e_color((c("#ffcdd2",
+#       #            "#bbdefb"
+#       #            ))) %>%
+#       e_x_axis(show = FALSE) %>%
+#       # e_y_axis(show = FALSE) %>%
+#       #echarts4r::e_title("BMI distribution (filtered)") %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
+#       e_theme('walden') %>%
+#       echarts4r::e_title( text = "BMI Excedance", subtext = "Where values of BMI exceed expected") %>%
+#       e_legend(show=F) %>%
+#       e_y_axis(formatter = e_axis_formatter("percent", digits = 0)) %>%
+#       # e_color(c('#2AFEB7','yellow')) %>%
+#       #echarts4r::e_x_axis(name = "BMI band") %>%
+#       # echarts4r::e_y_axis(name = "People") %>%
+#       e_grid(containLabel = TRUE) # top = 40, right = 20, bottom = 40, left = 50)
+#   })
+# 
+#   # exceedence_age
+#   output$excedance_age <- renderEcharts4r({
+# 
+#     ## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
+# 
+#     expect <- pop %>%
+#       count(age10,bmi, name = 'bmi_count') %>%
+#       add_count(age10, wt = bmi_count, name = 'total_count') %>%
+#       mutate( expect = bmi_count/total_count )
+# 
+#     dat <-count(map_filtered_chart(), bmi, age10, name = 'filter') %>%
+#       add_count(age10,wt = filter,name = 'filtered_count') %>%
+#       mutate( actual = filter/filtered_count )
+# 
+#     expect <- left_join(expect, dat) %>%
+#       mutate(exceed = actual - expect) %>%
+#       mutate(isPos = (exceed>0)) %>%
+#       filter(!is.na(bmi)) %>%
+#       filter(bmi!='normal')
+# 
+#     # print(expect)
+#     expect %>%
+#       group_by(age10) %>%
+#       echarts4r::e_charts(bmi,textStyle = list( fontSize=9)) %>%
+#       echarts4r::e_bar(exceed) %>%
+#       e_visual_map(type = 'piecewise',orient = 'horizontal',
+#                    pieces = list(
+#                      list(gt= 0,
+#                           # lte= 50,
+#                           color= '#ffcdd2'),
+#                      list(lte= 0,
+#                           # lte= 50,
+#                           color= '#bbdefb'))
+#       ) %>%
+#       # )) %>%
+#       # e_color((c("#ffcdd2",
+#       #            "#bbdefb"
+#       #            ))) %>%
+#       e_x_axis(show = FALSE) %>%
+#       # e_y_axis(show = FALSE) %>%
+#       #echarts4r::e_title("BMI distribution (filtered)") %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
+#       e_theme('walden') %>%
+#       echarts4r::e_title( text = "BMI Age Excedance", subtext = "Where values of BMI exceed expected") %>%
+#       e_legend(show=F) %>%
+#       e_y_axis(formatter = e_axis_formatter("percent", digits = 0)) %>%       # e_color(c('#2AFEB7','yellow')) %>%
+# 
+#       #echarts4r::e_x_axis(name = "BMI band") %>%
+#       # echarts4r::e_y_axis(name = "People") %>%
+#       e_grid(containLabel = TRUE) # top = 40, right = 20, bottom = 40, left = 50)
+#   })
+# 
+#   output$excedance_bmi_deprivation <- renderEcharts4r({
+#     ## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
+# 
+#     expect <- pop %>%
+#       count(bmi,mdm_quintile_soa_name, name = 'bmi_count') %>%
+#       add_count(mdm_quintile_soa_name, wt = bmi_count, name = 'total_count') %>%
+#       mutate( expect = bmi_count/total_count )
+# 
+#     dat <-count(map_filtered_chart(),bmi, mdm_quintile_soa_name, name = 'filter') %>%
+#       add_count(mdm_quintile_soa_name, wt = filter,name = 'filtered_count') %>%
+#       mutate( actual = filter/filtered_count )
+# 
+#     expect <- left_join(expect, dat) %>%
+#       mutate(exceed = actual - expect) %>%
+#       mutate(isPos = (exceed>0)) %>%
+#       filter(!is.na(bmi))
+# 
+#     # print(expect)
+#     expect %>%
+#       group_by(mdm_quintile_soa_name) %>%
+#       echarts4r::e_charts(bmi,textStyle = list( fontSize=9)) %>%
+#       echarts4r::e_bar(exceed) %>%
+#       echarts4r::e_title( text = "BMI Deprivation Exceedance", subtext = "Where values of BMI exceed expected") %>%
+#       e_visual_map(type = 'piecewise',orient = 'horizontal',
+#                    pieces = list(
+#                      list(gt= 0,
+#                           # lte= 50,
+#                           color= 'rgb(0,200,0)'# '#ffcdd2'
+#                           ),
+#                      list(lte= 0,
+#                           # lte= 50,
+#                           color= 'steelblue'
+#                           ))
+#       ) %>%
+#       e_x_axis(show = FALSE) %>%
+#       e_theme('walden') %>%
+#       e_y_axis(formatter = e_axis_formatter("percent", digits = 0)) %>%
+#       # e_y_axis(show = FALSE) %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
+#       e_legend(show=F) %>%
+#       e_grid(containLabel = TRUE)
+#   })
+# 
+# 
+#   # --- charts ---------------------------------------------------------------
+#   output$bmi_chart <- renderEcharts4r({
+#     dat <- count(map_filtered_chart(),bmi) %>% ## bmi_counts(); validate(need(nrow(dat) > 0, "BMI not available."))
+#       mutate(n = n * pop_scale_up)
+#     
+#     dat %>%
+#       echarts4r::e_charts(bmi,height = 190, width='200',textStyle = list( fontSize=9)) %>%
+#       echarts4r::e_bar(n, name = "Count") %>%
+#       #echarts4r::e_title("BMI distribution (filtered)") %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
+#       e_legend(show=F) %>%
+#       # e_color(c('#2AFEB7','yellow')) %>%
+#       #echarts4r::e_x_axis(name = "BMI band") %>%
+#       echarts4r::e_y_axis(name = "People") %>%
+#       e_theme('walden') %>%
+#       e_grid(containLabel = TRUE) # top = 40, right = 20, bottom = 40, left = 50)
+#   })
+# 
+#   output$age_chart <- renderEcharts4r({
+#     dat <- count(map_filtered_chart(),age20) %>% ##age_counts(); validate(need(nrow(dat) > 0, "Age not available."))
+#       mutate(n = n * pop_scale_up)
+#     
+#     dat %>%
+#       echarts4r::e_charts(age20,height = 190, width='200') %>%
+#       echarts4r::e_bar(n, name = "Count") %>%
+#       #echarts4r::e_title("Age bands (filtered)") %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
+#       e_legend(show=F) %>%
+#       #echarts4r::e_x_axis(name = "Age band") %>%
+#       echarts4r::e_y_axis(name = "People") %>%
+#       e_legend(show=F) %>%
+#       e_theme('walden') %>%
+#       #e_color(c('#2AFEB7','yellow')) %>%
+#       e_grid(containLabel = TRUE)
+#   })
+# 
+#   output$sex_chart <- renderEcharts4r({
+# 
+#     dat <- count(map_filtered_chart(),sex) %>% #sex_counts(); validate(need(nrow(dat) > 0, "Sex not available."))
+#       mutate(n = n * pop_scale_up)
+#     
+#     dat %>%
+#       # group_by(sex) %>%
+#       echarts4r::e_charts(sex,height = 190,width='200') %>%
+#       echarts4r::e_bar(n) %>%
+#       e_legend(show=F) %>%
+#       #echarts4r::e_title("Sex split (filtered)", textStyle = list( fontSize=9)) %>%
+#       echarts4r::e_tooltip(formatter = "{b}: {c} ({d}%)",confine = T) %>%
+#       #e_color(c('#2AFEB7','yellow')) %>%
+#       echarts4r::e_grid(containLabel = TRUE) %>%
+#       e_text_style(
+#         #color = "white",
+#         #fontStyle = "italic"
+#         textStyle = list(fontSize = 9)
+#         ) %>%
+#       e_theme('walden')
+#   })
+# 
+#   output$depriv_chart <- renderEcharts4r({
+#     dat <- count(map_filtered_chart(), mdm_quintile_soa_name) %>% #depriv_counts(); validate(need(nrow(dat) > 0, "Deprivation not available."))
+#       mutate(n = n * pop_scale_up)
+#     
+#     # Pick the x column dynamically
+#     # xcol <- if ("mdm_quintile_soa_name" %in% names(dat)) "mdm_quintile_soa_name" else "mdm_quintile_soa"
+# 
+#     dat %>%
+#       mutate(mdm_quintile_soa_name = factor(mdm_quintile_soa_name,
+#                                             levels = c("Most Deprived","Quintile 2","Quintile 3","Quintile 4","Least Deprived"))) %>%
+#       arrange(mdm_quintile_soa_name) %>%
+#       echarts4r::e_charts(mdm_quintile_soa_name,height = 190,width='200') %>%
+#       echarts4r::e_bar(n, name = "Count") %>%
+#       e_legend(show = F) %>%
+#       #echarts4r::e_title("Deprivation quintile (filtered)",textStyle = list( fontSize=9)) %>%
+#       #echarts4r::e_tooltip(trigger = "axis") %>%
+#       echarts4r::e_tooltip(trigger = "axis",confine =T) %>%
+#       # e_color(c('#2AFEB7','yellow')) %>%
+# 
+#       #echarts4r::e_x_axis(name = "MDM quintile") %>%
+#       echarts4r::e_y_axis(name = "People") %>%
+#       echarts4r::e_grid(containLabel = TRUE) %>%
+#       e_theme('walden')
+#   })
+# 
+#   output$qrisk_chart <- renderEcharts4r({
+#     dat <- map_filtered_chart() %>%
+#       slice_sample(n = 500)
+# 
+#     y_max <- ceiling(max(dat$qrisk_score, na.rm = TRUE))
+#     y_max <- max(y_max, 1)  # ensure sensible upper bound
+# 
+#     dat %>%
+#       echarts4r::e_charts(id,height = 190,width='200') %>%
+#       # points (strip/list)
+#       echarts4r::e_scatter(qrisk_percentile,
+#                            name = "QRisk",
+#                            symbolSize = 6,
+#                            large = TRUE,
+#                            largeThreshold = 2000,
+#                            itemStyle=list(opacity=0.2)
+#       ) %>%
+#       # mean & median reference lines
+#       echarts4r::e_mark_line(data = list(
+#         list(type = "average", name = "Mean"),
+#         list(type = "median", name = "Median")
+#       )) %>%
+#       # axes & layout
+#       echarts4r::e_y_axis(
+#         name = "QRisk (%)",
+#         min = 0, max = y_max,
+#         axisLabel = list(formatter = "{value}%")
+#       ) %>%
+#       echarts4r::e_x_axis(show = FALSE) %>%
+#       echarts4r::e_grid(containLabel = TRUE) %>%
+#       e_theme('walden')
+# 
+#   })
+# 
+#   output$qrisk_chart1 <- renderEcharts4r({
+#     dat <- map_filtered_chart() %>%
+#       slice_sample(n = 500)
+# 
+#     dat %>%
+#       filter(age>25) %>%
+#       filter(!is.na(bmi)) %>%
+#       group_by(bmi) %>%
+#       e_charts(height=290) %>%
+#       e_density(qrisk_percentile,breaks=5) %>%
+# 
+#       e_mark_line(title = 'Baseline',
+#                   data = list(
+#                     type = "average",
+#                     name = "Average"
+#                   )) %>%
+#       e_theme('walden')%>%
+#       echarts4r::e_grid(containLabel = TRUE)
+# 
+#   })
+# 
+#   # --- headline card (optional) --------------------------------------------
+#   output$headline_count <- renderText({
+# 
+#     format(nrow(map_filtered_chart())*pop_scale_up, big.mark = ",")
+#   })
+# 
+#   output$qrisk_average <- renderText({
+#     # print('##############')
+#     # print(head(map_filtered_chart()))
+#     # print('##############')
+#     signif(digits = 3 ,mean(map_filtered_chart()$qrisk_score)) #qrisk_percentile
+#   })
+# 
+#   output$areaPer100k <- renderText({
+#     tryCatch({
+#     inside <- st_within(parks, bb(), sparse = FALSE)
+#     sum(parks$area[inside])/nrow(map_filtered_chart()) * 100000/1000
+#   }, error = function(e) {
+#     NA_real_
+#   })
+#   })
+# 
+#   output$parkPer100k <- renderText({
+#     tryCatch({
+#     inside <- st_within(parks, bb(), sparse = FALSE)
+#     nrow(parks[inside,])/nrow(map_filtered_chart()) * 100000
+#   }, error = function(e) {
+#     NA_real_
+#   })
+#   })
+# 
+#   output$ffPer100k <- renderText({
+#     tryCatch({
+#       inside <- st_within(fast_food, bb(), sparse = FALSE)
+#       nrow(fast_food[inside, ]) / nrow(map_filtered_chart()) * 100000
+#     }, error = function(e) {
+#       # NA_real_
+#       bb_replace <- st_as_sfc(
+#         st_bbox(c(ymax = 57.0706,
+#                   xmax =  0.2636719,
+#                   ymin = 52.19414,
+#                   xmin = -12.56836), crs = st_crs(4326)
+#                 ))
+#       inside <- st_within(fast_food, bb_replace, sparse = FALSE)
+#       nrow(fast_food[inside, ]) / nrow(map_filtered_chart()) * 100000
+#     })
+#   })
+# 
+#   output$overweight_percentage <- renderText({
+#     x <-  map_filtered_chart() %>%
+#       summarise(ow = sum(bmi%in%c('overweight','obese')), n=n()) %>%
+#       mutate(pw_perc = ow/n) %>%
+#       pull(pw_perc)
+#     signif(digits = 2, x*100)
+#   })
+  # end commented out production data ----
   
 }
 

@@ -2,7 +2,7 @@
 #source('app_prep.R')
   
 ( risk_prob_density_fn <-  pop |>
-    #filter(qrisk_score>=0.01) |>
+    filter(qrisk_score>=0.01) |>
     # filter(qrisk_score<0.3) |>
     filter(!is.na(bmi)) |>
     # group_by(age10) |>
@@ -10,7 +10,7 @@
     # e_histogram(qrisk_score) #|>
     e_density(qrisk_score, 
               breaks = 20,
-              # name = "density",
+              name = "1yr risk of CVD",
               #stack='stack',
               areaStyle = list(opacity = 0.9), 
               #y_index = 1
@@ -21,7 +21,7 @@
 
  (
    risk_prob_density_fn_age10 <- pop |>
-  filter(qrisk_score>=0.02) |>
+  filter(qrisk_score>=0.01) |>
   # filter(qrisk_score<0.3) |>
   
   filter(!is.na(bmi)) |> 
@@ -38,7 +38,7 @@
             #y_index = 1
             ) |> 
    e_legend( selector = TRUE) %>%
-  e_tooltip() %>% 
+  e_tooltip(show=T) %>% 
    e_grid(containLabel = T) %>% 
    e_theme('walden')
 )
@@ -109,12 +109,12 @@ zoomin_risk_age_bmi <- pop |>
 
 (
 comorbidities_curve_wo_0_or_1 <- pop |> 
-  # group_by(age10) |>
+  group_by(age10) |>
   filter(multimorbidity>1) |> 
   e_charts() |>
   e_density(breaks = 8,
             multimorbidity, 
-            name = "density",
+            # name = "density",
             # stack = 'stack',
             areaStyle = list(opacity = .4), 
             smooth = TRUE, y_index = 1) |>
@@ -136,6 +136,7 @@ comorbidities_age <- pop |>
             smooth = TRUE, y_index = 1) |>
   e_tooltip() %>% 
   e_grid(containLabel = T) %>% 
+    e_y_axis(name = 'avg comorbidities') %>% 
   e_theme('walden')
   )
   
@@ -157,6 +158,21 @@ comorbidities_bmi <- pop |>
   e_grid(containLabel = T)
 )
   
+ ( 
+ cmms_bmi <-  pop %>% 
+    group_by(bmi) %>% 
+    summarise(cmms = mean(cmms)) %>% 
+    filter_out(is.na(bmi)) %>% 
+    # group_by(bmi) %>% 
+    e_charts(bmi) %>% 
+    e_bar(cmms, bind = bmi, name = 'CMMS', 
+          legend = T) %>% 
+    e_theme('walden') %>% 
+    # e_tooltip() %>% 
+    e_tooltip(formatter = e_tooltip_item_formatter(style = "percent", digits = 0)) %>%
+    e_y_axis(formatter = e_axis_formatter("percent", digits = 1))
+  )
+  
 reduced_pop <- pop |>
   mutate(percentile = rank(qrisk_score)/max(rank(qrisk_score))) |> 
   ungroup() |> 
@@ -167,14 +183,15 @@ reduced_pop <- reduced_pop |>
 
 (
 risk_bmi <- reduced_pop |> 
-  group_by(bmi) |> 
+    group_by(bmi) |>
   filter(!is.na(bmi)) |> 
   e_charts() |> 
-  e_boxplot(qrisk_score,outliers = T) |> 
+  e_boxplot(qrisk_score,outliers = T  ) |> 
   # e_color(color = c('orange','red','blue','green')) |>
   e_flip_coords() |> 
   e_grid(left='20%') |> 
   e_theme('roma') %>% 
+    e_tooltip() |> 
   e_grid(containLabel = T)
 )
 
@@ -193,30 +210,37 @@ risk_bmi <- reduced_pop |>
     # e_lm( mdm_rank ~ qrisk_score )
     # e_lm( qrisk_score ~ mdm_rank  ) %>% 
   e_lm(name = c('20-40','40-60','60-80','80-100'),
+       itemStyle = list(opacity=0.5),
     # name = unique(reduced_pop$age20),
        # legend = T,
        formula =  qrisk_score ~ mdm_rank  ) |>
-  e_tooltip(backgroundColor = 'white') %>%
   # e_grid(containLabel = T) #%>%
-  e_theme('roma')  %>% 
-    e_tooltip(backgroundColor = 'white') %>% 
+  e_theme('azul')  %>% 
+  e_tooltip(#backgroundColor = 'white',
+            trigger='axis',
+            formatter = e_tooltip_pointer_formatter(style = 'percent',digits=2)
+            ) %>%
+    # e_tooltip(backgroundColor = 'white') %>% 
     e_axis( axis = 'y', formatter = e_axis_formatter('percent')) 
 )
 
 (
-deprivation_risk_by_bmi_chart <- pop |> 
+deprivation_risk_by_bmi_chart <- reduced_pop |> 
   filter(!is.na(bmi)) |> 
   group_by(bmi,soa_code) |> 
   summarise(qrisk_score = mean(qrisk_score),mdm_rank=mean(mdm_rank)) |> 
   e_charts(mdm_rank,emphasis = list(focus = 'series')) |>
   e_scatter(qrisk_score) |>
   e_lm(name = rev(c('obese','overweight','normal'  )),
+       # itemStyle = list(opacity=0.5),symbol='square',
     # legend = T,
     formula =   qrisk_score~mdm_rank)  %>% 
   e_grid(containLabel = T)%>% 
   e_theme('azul') %>% 
-    e_tooltip(backgroundColor = 'white') %>% 
-    e_axis( axis = 'y', formatter = e_axis_formatter('percent')) 
+    e_tooltip(backgroundColor = 'white',
+      trigger='axis',
+      formatter = e_tooltip_pointer_formatter(style = 'percent',digits=2)
+    ) %>%    e_axis( axis = 'y', formatter = e_axis_formatter('percent')) 
     
   )
   
@@ -225,7 +249,7 @@ deprivation_risk_by_bmi_chart <- pop |>
 
 #dumbbell plot echarts -----
 
-
+(
 df <- reduced_pop |> 
   # mutate(townsend_half = (custom_townsend_score_dz <max(custom_townsend_score_dz)/2)) |> 
   mutate(townsend_ends =percent_rank(custom_townsend_score_dz)) |> 
@@ -235,6 +259,7 @@ df <- reduced_pop |>
     group_by(townsend_ends,bmi) |>
   filter(!is.na(bmi)) |> 
     summarise(multimorbidity = mean(multimorbidity))
+)
 
 (
 comorbidities_bmi_townsend_extreme <- df |> 
@@ -280,7 +305,8 @@ df_heatmap <- pop |>
     precedence = seq(1,11)
   ),by='name') %>%
   left_join(.,.,by='id') |> 
-  count(name.x,name.y) 
+  count(name.x,name.y) %>% 
+  mutate(n = n *pop_scale_up)
 
 
 (
@@ -346,7 +372,8 @@ edges_df <- pop |>
   ),by='name') %>%
   left_join(.,.,by='id') |> 
   filter(precedence.x > precedence.y) |> 
-  count(from = name.x,to = name.y)
+  count(from = name.x,to = name.y)%>% 
+  mutate(n = n *pop_scale_up)
   
   
   nodes = pop |>
@@ -363,8 +390,10 @@ edges_df <- pop |>
               Diabetes  = diabetes_status!= 'no_diabetes'
     ) |> 
     pivot_longer(-id) |> 
-    count(name, wt=value) |> 
-    mutate(size = n/1000) |> 
+    count(name, wt=value) %>% 
+  mutate(n = n *pop_scale_up)|> 
+    
+    mutate(size = n/10000) |> 
     mutate(value = n,.keep = 'unused') |> 
     mutate(grp = row_number()) |> 
     mutate(grp = name) |> 
@@ -376,7 +405,8 @@ edges_df <- pop |>
     group_by(from)
   
 (  
- risk_graph <-  e_charts(emphasis = list(focus = 'self'), height='100%', width = '100%') |> 
+ risk_graph <-  e_charts(emphasis = list(focus = 'self'), #height='100%', width = '100%'
+                         ) |> 
     e_graph(
        layout = "circular", 
       circular = list(
@@ -418,7 +448,43 @@ edges_df <- pop |>
 
   
 )
+  
+  
+  chord_data <- data.frame(
+    source = c("a", "b", "c", "d", "c"),
+    target = c("b", "c", "d", "e", "e"),
+    value = ceiling(rnorm(5, 10, 1)),
+    stringsAsFactors = FALSE
+  )
+  
+  chord_data |>
+    e_charts() |>
+    e_chord(source, target, value, lineStyle = list(
+      opacity= 0.3,
+      color= 'gradient' # or 'source' (default), 'target'
+)) %>% 
+    e_tooltip() %>% 
+    e_theme('walden')
 
+  
+  
+  save(list = c(
+  'risk_prob_density_fn',
+  'risk_prob_density_fn_age10',
+  'risk_prob_density_fn_bmi',
+  'comorbidities_curve_wo_0_or_1',
+  'comorbidities_age',
+  'comorbidities_bmi',
+  'cmms_bmi',
+  'risk_bmi',
+  'deprivation_risk_by_age20_chart',
+  'deprivation_risk_by_bmi_chart',
+  'comorbidities_bmi_townsend_extreme',
+  'df_heatmap',
+  'heatmap_risk_factors',
+  'reduced_heatmap_risk_factors',
+  'risk_graph'),
+       file = './preprocess/risk_stratification.RData')
   
 # reduced_pop |> 
 #     filter(age>25) |> 

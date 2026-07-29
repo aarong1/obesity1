@@ -121,7 +121,7 @@ source('./3_pre_main/main_deaths_dt.R')
 
 
 source('./1_2_utils/main_configuration.R') # model_specification list
-model_specification$population$scale_down_factor = model_specification$population$scale_down_factor/0.01
+model_specification$population$scale_down_factor =1000# model_specification$population$scale_down_factor/0.01
 model_specification$model$duration = 5#12
 model_specification$model$number_of_runs = 5
 

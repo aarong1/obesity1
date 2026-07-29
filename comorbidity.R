@@ -1,22 +1,25 @@
 library(fst)
-# source('app_prep.R')
 
-#Risk Stratification
-
-pop |> count(bmi)
-
-pop$deprivation
+pop$mdm_quintile_soa_name
 pop$custom_townsend_rank
 pop$custom_townsend_score_dz
+
 pop$income_dm_decile_soa
 pop$employment_dm_decile_soa
-# Urban_mixed_rural_status
-# NRA_name
+pop$Urban_mixed_rural_status
 
-bmi_age_10_bands_stacked <- pop |> count(age10,bmi) |>
+pop$RA_name
+pop$Urban_mixed_rural_status
+
+(
+bmi_age_10_bands_stacked <- pop |> 
+    count(age10,bmi) |>
+    mutate(n = n * pop_scale_up) %>%
   group_by(bmi) |>
       dplyr::filter(!is.na(bmi)) |>
-      echarts4r::e_charts(age10, emphasis = list( focus = 'self')) |>
+      echarts4r::e_charts(age10, 
+                          height = '100%', width = '100%',
+                          emphasis = list( focus = 'self')) |>
       echarts4r::e_bar(n, stack = "BMI") |>
       echarts4r::e_title("BMI distribution across Age Bands") |>
       echarts4r::e_tooltip(trigger = "axis") |>
@@ -25,9 +28,12 @@ bmi_age_10_bands_stacked <- pop |> count(age10,bmi) |>
       echarts4r::e_y_axis(name = "Population Count") |>
       # echarts4r::e_datazoom(xy = F) %>% 
   e_theme('walden')
-  
+  )
+
+(
 metric_chart_bmi_age <- pop |> 
   dplyr::count(age10, bmi, name = "n") |>
+    mutate(n = n * pop_scale_up) %>% 
   dplyr::filter(!is.na(bmi)) |>  
   group_by(bmi) |> 
 
@@ -40,30 +46,20 @@ metric_chart_bmi_age <- pop |>
   e_theme('walden') %>% 
   echarts4r::e_legend(show=T, selector = TRUE) #%>% 
   # e_title('BMI with Age')
-  
-metric_chart_bmi_sex <- pop |> count(sex,bmi) |> 
-  dplyr::filter(!is.na(bmi)) |>  
-  group_by(bmi) |> 
-  echarts4r::e_charts(sex,emphasis = list( focus = 'self')) |> #, height = '100%', width = '100%'
-  e_grid( containLabel = T ,confine=T)|> 
-  e_theme('walden') %>% 
-  echarts4r::e_bar(n) |>
-  #echarts4r::e_title("BMI distribution across Age Bands") |>
-  echarts4r::e_tooltip(trigger = "axis",confine=T)
+)
+
 
 #############################################
 # With the height and width both set to 100%
 #############################################
 (
 metric_chart_bmi_sex <- pop |> count(sex,bmi) |> 
+  mutate(n = n * pop_scale_up) %>% 
   dplyr::filter(!is.na(bmi)) |>  
   group_by(bmi) |> 
   echarts4r::e_charts(sex,emphasis = list( focus = 'self'), height = '100%', width = '100%') |> #, height = '100%', width = '100%'
-  e_grid( containLabel = F ,confine=F)|> 
   e_theme('walden') %>% 
   echarts4r::e_bar(n) |>
-  
-  #echarts4r::e_title("BMI distribution across Age Bands") |>
   echarts4r::e_tooltip(trigger = "axis",confine=F)
 )
 
@@ -92,103 +88,102 @@ if(is.logical(df$x_col)){
  # echarts4r::e_charts(x_col,height = '400px',width='300px') |>
     echarts4r::e_charts(x_col, height = '100%',width = '100%',emphasis = list( focus = 'self') ) %>%  # ,height = '100%',width = '100%'
     echarts4r::e_bar(value) |>
-    e_grid( containLabel = T )|> 
+    e_grid( containLabel = F )|> 
     e_theme('walden') |>
   #echarts4r::e_title("BMI distribution across Age Bands") |>
   echarts4r::e_tooltip(trigger = "axis",confine=T)
 }
 
+pop <- pop |> 
+  mutate(income_dm_decile_soa_name = factor(
+    income_dm_decile_soa,
+    levels = 1:10,
+    labels= c('Most Deprived', 2:9, 'Most Affluent')
+  )) |> 
+  mutate(employment_dm_decile_soa_name = factor(
+    employment_dm_decile_soa,
+    levels = 1:10,
+    labels= c('Most Deprived', 2:9, 'Most Affluent')
+  ))
+  
+
 (income_plot <- pop |> 
-  count(income_dm_decile_soa,bmi) |> 
-  fn_plt(x_col=income_dm_decile_soa) %>% 
+  count(income_dm_decile_soa_name,bmi) |> 
+    mutate(n = n * pop_scale_up) %>% 
+  fn_plt(x_col=income_dm_decile_soa_name) %>% 
     e_lm(x_col~bmi)
   )
 
-employment_plot <- pop |> count(bmi,employment_dm_decile_soa)|> 
-  fn_plt(x_col=employment_dm_decile_soa)
+employment_plot <- pop |> count(bmi,employment_dm_decile_soa_name)|> 
+  mutate(n = n * pop_scale_up) %>% 
+  fn_plt(x_col=employment_dm_decile_soa_name)
 
 NRA_plot <- pop |> 
   # mutate(NRA_name = na_if(NRA_name, 'NA')) |> 
   count(bmi, NRA_name = 'NA'==NRA_name)|> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col = NRA_name, lab='NRA')
 
 HSCT_plot <- pop |> 
   # mutate(NRA_name = na_if(NRA_name, 'NA')) |> 
   count(bmi, HSCT)|> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col = HSCT)
 
 hypertension_plot <- pop |> 
   count(bmi,hypertension = hypertension_status != 'normotensive_untreated')|> 
-  fn_plt(x_col=hypertension, lab = 'Hypertension') #|> 
-  # rename(value = n) |>
-  # rename(x_col = hypertension) |>
-  # mutate(x_col= ifelse(is.logical(x_col),
-  #               ifelse(x_col==T,as.character(x_col),'normal'),
-  #               x_col))) |>
-  # dplyr::filter(!is.na(bmi)) |>  
-  # group_by(bmi) |> 
-  # echarts4r::e_charts(x_col) |>
-  # echarts4r::e_bar(value) |>
-  # #echarts4r::e_title("BMI distribution across Age Bands") |>
-  # echarts4r::e_tooltip(trigger = "axis")
+  mutate(n = n * pop_scale_up) %>% 
+  fn_plt(x_col=hypertension, lab = 'Hypertension') #
 
 af_plot <- pop |> count(bmi,atrial_fibrillation = (af_status == 'af')) |> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=atrial_fibrillation, lab = 'Atrial Fibrillation')
+
 ethnicity_plot <- pop |> count(bmi,ethnicity = broad_ethnicity)|> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=ethnicity)
+
 pad_plot <- pop |> count(bmi,pad = (pad_status == 'pad'))|> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=pad, lab = 'Peripheral Arterial Disease')
+
 ckd_plot <- pop |> count(bmi,ckd = (ckd_status == 'ckd'))    |> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=ckd, lab = 'Early stage Kidney Disease')
 
-cholesterol_plot <- pop |> count(bmi,cholesterol = (cholesterol_status=='raised_cholesterol'))|> 
+cholesterol_plot <- pop |> 
+  count(bmi,cholesterol = (cholesterol_status=='raised_cholesterol'))|> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=cholesterol, lab = 'High Cholesterol')
 
-smoke_plot <- pop |> count(bmi,smoking = !is.na(smoking))  |> 
+smoke_plot <- pop |> 
+  count(bmi,smoking = !is.na(smoking))  |> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=smoking, lab = 'Smokes')
-alcohol_plot <- pop |> count(bmi,alcohol = !is.na(alcohol)) |> 
+
+alcohol_plot <- pop |> 
+  count(bmi,alcohol = !is.na(alcohol)) |> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=alcohol, lab = 'Unsafe Alcohol Consumption')
-diet_plot <- pop |> count(bmi,diet = !is.na(diet))     |> 
+
+diet_plot <- pop |> 
+  count(bmi,diet = !is.na(diet)) |> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=diet, lab = 'Unhealthy Diet')
-pa_plot <- pop |> count(bmi,pa = !is.na(pa))      |> 
+
+pa_plot <- pop |> 
+  count(bmi,pa = !is.na(pa)) |> 
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col=pa, lab = 'Insufficient Physical Activity')
-
-# pop |> count(bmi,wellbeing = !is.na(wellbeing))
-# pop |> count(bmi,pm25g = !is.na(pm25g)) 
-
-# pop <- pop |> 
-#   rowwise() |> 
-#   mutate(
-#   comorbidities = sum(
-# !is.na(diabetes),
-# !is.na(atrial_fibrillation),
-# !is.na(pad),
-# !is.na(ckd),
-# !is.na(hypertension),
-# !is.na(cholesterol),
-# 
-# !is.na(bmi),
-# !is.na(smoking),
-# !is.na(alcohol),
-# !is.na(diet),
-# !is.na(pa)#,
-# #!is.na(wellbeing)#,
-# #!is.na(pm25g)
-# )
-# )
 
 comorbidities_plot <- pop |> 
   filter(!is.na(bmi)) |>
   # count(bmi,comorbidities) |> 
   # fn_plt(x_col = comorbidities)
   count(bmi,multimorbidity) |> 
+  mutate(multimorbidity = factor(multimorbidity,levels = as.character(0:10))) |>
+  mutate(n = n * pop_scale_up) %>% 
   fn_plt(x_col = multimorbidity)
-
-
-# pop |> 
-#   # ggplot(aes(comorbidities, n, fill=bmi))+
-#   ggplot(aes(multimorbidity, n, fill=bmi))+=
-#   geom_col(position = 'dodge')
 
 hist(pop$multimorbidity)
 hist((pop$qrisk_score))
@@ -206,12 +201,7 @@ hist((pop$qrisk_score))
     summarise(pm25g = mean(pm25g)) |> 
     e_charts(bmi) |> 
     e_bar(pm25g) |> 
-    # e_color(color = c('lightblue')) |> 
-    e_lm(pm25g~bmi,name = 'trend') %>% 
-    # e_line(pm25g,
-    #        color='mediumseagreen',
-    #        itemStyle = list(opacity=1, size=10),
-    #        lineStyle = list(width=5)) |> 
+    e_lm(pm25g ~ bmi,name = 'trend') %>% 
     e_y_axis(min = 4, max = 5)   %>% 
     e_grid(  containLabel = T) 
 )
@@ -225,43 +215,38 @@ hist((pop$qrisk_score))
     group_by(bmi) %>%
     e_charts(pm25g, emphasis = list( focus = 'series')) |>
     e_scatter(n, selectedMode = 'series' ) |>
-    # e_color(color = c('lightblue')) |>
-    e_lm(n ~ pm25g,
+    e_theme('azul') %>%
+    e_tooltip(backgroundColor = 'white' ,
+              # trigger = "item",
+              # formatter = '{a}{b}{c}{d}{e}'
+              formatter =  htmlwidgets::JS("function(v){return Math.round(v.value[1]*10000) / 100 + '%';}")
+              # formatter = e_tooltip_pie_formatter(style = 'percent', digits = 0)
+              ) %>% 
+    e_lm(n ~ pm25g  ,
          name = rev(c('obese','overweight','normal'))
          ) %>%
-    # e_line(pm25g,
-    #        color='mediumseagreen',
-    #        itemStyle = list(opacity=1, size=10),
-    #        lineStyle = list(width=5)) |>
-    # e_y_axis(max=40)   %>%
-    e_grid(  containLabel = T) %>% 
     e_zigzag(axis ='x',start=0,end=2)   %>%
-    e_theme('azul') %>% 
+    e_axis(axis = 'x', name = 'PM25g') %>%
     e_axis(axis = 'y', formatter = e_axis_formatter('percent'))
 )
-  #!is.na(pm25g)
-
-pop |>
+(
+distribution_pollution_bmi_chart <- pop |>
   filter(!is.na(bmi)) |>
   group_by(sdz_code, bmi)%>%
   summarise(pm25g = mean(pm25g),n=n()) |>
-  add_count(sdz_code, wt = n, name = 'nn') %>% 
+  # add_count(sdz_code, wt = n, name = 'nn') %>% 
   # mutate(n = n/nn) |>
   group_by(bmi) %>%
-  e_charts(pm25g, emphasis = list( focus = 'series')) |>
-  e_density(n, selectedMode = T) %>% 
-
-  # e_histogram(n, selectedMode = T) #|>
-  # e_color(color = c('lightblue')) |>
-  
-  # e_line(pm25g,
-  #        color='mediumseagreen',
-  #        itemStyle = list(opacity=1, size=10),
-  #        lineStyle = list(width=5)) |>
-  # e_y_axis(max=40)   %>%
+  e_charts( emphasis = list( focus = 'series')) |>
+  e_density(pm25g, 
+            symbol = 'none',
+            selectedMode = T,
+            areaStyle = list(opacity=0.5),
+            lineStyle = list(width =0)) %>% 
   e_grid(  containLabel = T) %>% 
   e_theme('azul') %>% 
   e_axis(axis = 'y', formatter = e_axis_formatter('percent'))
+)
 
 (pm25g_urban_chart <- pop |>   
   filter(!is.na(bmi)) |> 
@@ -278,6 +263,7 @@ pop |>
   #        itemStyle = list(opacity=1, size=10),
   #        lineStyle = list(width=5)) |> 
   e_zigzag(axis ='y',start=0,end=3)   %>% 
+    e_y_axis(name = 'PM25g') %>%
     e_grid(  containLabel = T) 
   )
 
@@ -289,19 +275,23 @@ pop |>
   group_by(bmi) |> 
   summarise(depression_percentile = mean(depression_percentile),n()) |> 
     
-  e_charts(bmi,  height = '100%',width = '100%') |> 
+  e_charts(bmi,  height = '100%',width = '100%'
+           ) |> 
   e_bar(name = 'Propensity for poor mental health',depression_percentile) |>
+    echarts4r::e_tooltip(#trigger = "axis",#confine=T,
+                         formatter = e_tooltip_item_formatter('percent')) %>% 
     e_y_axis(name = 'Propensity' ) |>
   # e_color(color = c('lightblue')) |> 
-    e_lm(depression_percentile ~ bmi , name = 'trend') %>% 
+    e_lm(depression_percentile ~ bmi , name = 'trend',legend = list(show =FALSE)) %>% 
   # e_line(legend = F, depression_percentile,
   #        #color='mediumseagreen',
   #        itemStyle = list(opacity=0),
   #        lineStyle = list(width=1,cap = 'round')) |> 
   e_grid(  containLabel = T )|> 
     e_theme('walden') |> 
-    e_zigzag(axis ='y',start=0.1,end=0.4)   %>% 
-    echarts4r::e_tooltip(trigger = "axis",confine=T)
+    e_zigzag(axis ='y',start=0,end=0.4)   %>% 
+    e_axis(axis = 'y', formatter = e_axis_formatter('percent'))
+  
 )
 
 ( pop |>   
@@ -330,23 +320,24 @@ pop |>
 ##################################
 ##################################
 
-pop |>
+(sleep_w_bmi <- pop |>
   filter(!is.na(bmi)) |>
   group_by(bmi) |>
   summarise(sleep_percentile = mean(sleep_percentile)) |>
   e_charts(bmi) |>
-  e_bar(sleep_percentile, ) |>
+  e_bar(sleep_percentile, name = 'Sleep Percentile' ) |>
   # e_color(color = c('lightblue')) |>
-    e_zigzag(axis = 'y',start = 0.1,end = 0.4) %>%
+    e_zigzag(axis = 'y',start = 0,end = 0.4) %>%
   # e_line(sleep_percentile,
   #        color='lightblue',
   #        symbol='none',
   #        itemStyle = list(opacity=1),
   #        lineStyle = list(width=8,lineEnd='round')
   #        ) |>
+  e_axis(axis = 'y', formatter = e_axis_formatter('percent')) %>%
   e_theme('walden')
   # e_y_axis(min=0.4,max=0.6)
-
+)
 
 (
 sleep_bmi_chart <- pop |>
@@ -372,31 +363,35 @@ townsend_distribution_chart <- pop |>
   # group_by(bmi) |>
   e_chart() |>
   e_histogram(stack = 'bmi',
-
-            serie = custom_townsend_score_dz#,       
+              serie = custom_townsend_score_dz#,       
 
 ) |> 
+    
   e_grid( containLabel = T)  |> 
+e_y_axis(name = 'Count',formatter = JS('function(value){var fmt = new Intl.NumberFormat(1,1); return fmt.format(value*20); }')) |>
+    e_tooltip(formatter =
+    JS("params => {
+    console.log(params);
+            const { name, value } = params;
+            const { x, y } = value;
+var fmt = new Intl.NumberFormat(1,1)
+            return params.marker + params.value[0] + '<br>' + fmt.format(params.value[1]*20) + echarts.format.encodeHTML(name)
+                + '<b>' + echarts.format.encodeHTML(y) + '</b>';
+
+        }")
+    )|>
+    # e_tooltip() |> 
+    # e_y_axis(formatter = e_axis_formatter()) |> 
   e_theme('walden')
 )
 
 
-pop |> 
-  filter(!is.na(bmi)) %>%
-  # group_by(bmi) |>
-  # arrange(rev(bmi)) %>% 
-  e_chart() |>
-  echarts4r::e_tooltip(trigger = "axis") %>% 
-  e_histogram(#stack = 'bmi',
-              custom_townsend_score_dz    
-        
-  ) |> 
-  e_grid( containLabel = T)  |> 
-  e_theme('walden')
+
 
  pop |> 
     filter(!is.na(bmi)) %>%
     count(bmi,mdm_quintile_soa_name,mdm_quintile_soa) %>% 
+   mutate(n = n * pop_scale_up) %>%
    arrange(mdm_quintile_soa) %>% 
     group_by(bmi) |>
     e_chart(mdm_quintile_soa_name) |>
@@ -440,44 +435,95 @@ qrisk_distribution_chart <- pop |>
 #   e_line(pm25g,color='lightgreen') |> 
 #   e_y_axis(min=4,max=4.5) 
 
-pop |> 
-  filter(!is.na(bmi)) |> 
-  group_by(bmi) |> 
-  e_charts() |> 
-  e_boxplot(depression_percentile) %>% 
-  e_grid(  containLabel = T ) |> 
-  e_tooltip(confine=T) %>% 
-  e_theme('walden') 
+# pop |> 
+#   filter(!is.na(bmi)) |> 
+#   group_by(bmi) |> 
+#   e_charts() |> 
+#   e_boxplot(depression_percentile) %>% 
+#   e_grid(  containLabel = T ) |> 
+#   e_tooltip(confine=T) %>% 
+#   e_theme('walden') 
   
 
+ corisk_modifiable_chart <- pop %>% 
+   filter_out(is.na(bmi)) %>% 
+   count(bmi,corisk_modifiable) %>%
+   mutate(n = n * pop_scale_up) %>% 
+   mutate(
+     corisk_modifiable = factor(corisk_modifiable,levels = c(0,1,2,3,4,5,6,7,8))
+   ) %>%
+   group_by(bmi) %>% 
+   e_charts(corisk_modifiable, emphasis = list(focus = 'series')) %>% 
+   e_x_axis(name = 'Modifiable Risks') %>%
+   e_tooltip() |>
+   e_theme('westeros') |> 
+   
+   e_bar(n)
+ 
+ (
+ comorbid_risk_chart <- pop %>% 
+   filter_out(is.na(bmi)) %>% 
+   count(bmi,corisk_morbidity) %>%
+   mutate(n = n * pop_scale_up) %>% 
+   mutate(
+     corisk_morbidity = factor(corisk_morbidity,levels = c(0,1,2,3,4,5,6))
+   ) %>%
+   group_by(bmi) %>% 
+   e_charts(corisk_morbidity, emphasis = list(focus = 'series')) %>% 
+   e_x_axis(name = 'Comorbid Risks') %>%
+   e_tooltip() |> 
+   e_theme('westeros') |> 
+   e_bar(n) 
+ )
+ 
+ corisks_chart <- pop %>% 
+   filter_out(is.na(bmi)) %>% 
+   count(bmi,corisks) %>%
+   mutate(n = n * pop_scale_up) %>% 
+   mutate(
+     corisks = factor(corisks,levels = c(0,1,2,3,4,5,6))
+   ) %>%
+   group_by(bmi) %>% 
+   e_charts(corisks, emphasis = list(focus = 'series')) %>% 
+   e_x_axis(name = 'All Risks') %>%
+   e_tooltip() |> 
+   e_theme('westeros') |> 
+   
+   e_bar(n)
 
-depression_obesity_chart
-pm25g_urban_chart
-pm25g_bmi_chart_2
 
-townsend_distribution_chart
-qrisk_distribution_chart
-
-comorbidities_plot
-
-income_plot
-employment_plot
-NRA_plot
-HSCT_plot
-
-metric_chart_bmi_sex
-metric_chart_bmi_age
-
-ethnicity_plot
-
-hypertension_plot
-af_plot
-pad_plot
-ckd_plot
-cholesterol_plot
-
-smoke_plot
-alcohol_plot
-diet_plot
-pa_plot
+save(list = c('depression_obesity_chart',
+              'pm25g_urban_chart',
+              'pm25g_bmi_chart_2',
+              'pm25g_bmi_scatter_chart',
+              'townsend_distribution_chart',
+              'qrisk_distribution_chart',
+              
+              'comorbidities_plot',
+              'corisk_modifiable_chart',
+              'comorbid_risk_chart',
+              'corisks_chart',
+              
+              'income_plot',
+              'employment_plot',
+              'NRA_plot',
+              'HSCT_plot',
+              
+              'metric_chart_bmi_sex',
+              'metric_chart_bmi_age',
+              
+              'ethnicity_plot',
+              
+              'sleep_bmi_chart',
+              'hypertension_plot',
+              'af_plot',
+              'pad_plot',
+              'ckd_plot',
+              'cholesterol_plot',
+              
+              'smoke_plot',
+              'alcohol_plot',
+              'diet_plot',
+              'pa_plot'),
+     file = './preprocess/comorbidity.RData')
 

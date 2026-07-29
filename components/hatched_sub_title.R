@@ -2,7 +2,7 @@
 
 library(shiny)
 library(htmltools)
-
+library(bslib)
     
 hatched_subtitle <- function(title = 'Analyst Ratings') {
       
@@ -110,7 +110,8 @@ library(htmltools)
     
 sm_hatched_subtitle <- function(title = 'Analyst Ratings') {
       
-      HTML(
+      div(
+        singleton(HTML(
         paste0(
     '<head>
     <style>
@@ -140,7 +141,7 @@ sm_hatched_subtitle <- function(title = 'Analyst Ratings') {
       span.sm_hatched_label{
           visibility: inherit;
       letter-spacing: 0.05em;
-      text-transform: uppercase;
+      text-transform: titlecase;
       color: rgb(100,100,100);
       box-sizing: inherit;
       border: 0;
@@ -154,13 +155,16 @@ sm_hatched_subtitle <- function(title = 'Analyst Ratings') {
       display: inline-block;
       line-height:1;}
       </style>
-      </head>
-    <div>
-    <div class="fs-6 sm_hatched_title">
-                  <span class="sm_hatched_label">', title , '</span>
-              </div>
-    </div>')
+      </head>'))
+    ),
+    div(
+    div( class="sm_hatched_title",
+                  span( class="sm_hatched_label p-1 fs-5", title )
+    )
+    
         )
+      )
+    
   }
 
 browsable(

@@ -236,19 +236,27 @@ base_facet_sex  <- pop %>%
   ( males_affected_by_pubs_more_than_women <- base_facet_sex %>% 
     e_charts(per_no_pubs, emphasis = list(focus = 'series')) %>% 
     e_scatter(per) %>%
+      e_y_axis(formatter = e_axis_formatter("percent")) %>%
     e_lm(per ~ per_no_pubs ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
          name = c( 'Females', 'Males')
          #name = c('normal', 'overweight', 'obese')
-         ) #%>%
+         )  %>%
+      e_theme('auritus')
+    
   )
   
   (males_affected_by_food_outlets_more_than_women <- base_facet_sex %>% 
     e_charts(per_no_food, emphasis = list(focus = 'series')) %>% 
     e_scatter(per) %>%
+      e_y_axis(formatter = e_axis_formatter("percent")) %>%
+      
     e_lm(per ~ per_no_food ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
          name = c( 'Females', 'Males')
          #name = c('normal', 'overweight', 'obese')
-    ) #%>%
+    ) %>%
+      
+      e_theme('auritus')
+    
   )
   
   base_facet_sex %>% 
@@ -263,10 +271,14 @@ base_facet_sex  <- pop %>%
   females_respond_less_positively_to_green_space <- base_facet_sex %>% 
     e_charts(per_sum_area_pks, emphasis = list(focus = 'series')) %>% 
     e_scatter(per) %>%
+    e_y_axis(formatter = e_axis_formatter("percent")) %>%
+    
     e_lm(per ~ per_sum_area_pks ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
          name = c( 'Females', 'Males')
          #name = c('normal', 'overweight', 'obese')
-    ) #%>%
+    ) %>%
+    e_theme('auritus')
+  
   )
 
 ### At Super Data Zone level - not facet ----
@@ -401,15 +413,19 @@ base_facet_sex  <- pop %>%
          #name = c('normal', 'overweight', 'obese')
     ) #%>%
   
+  (
   semi_rural_responds_best_to_green_space <- base_facet_urban_rural %>% 
     e_charts(per_sum_area_pks, emphasis = list(focus = 'series')) %>% 
     e_scatter(per) %>%
+    e_y_axis(formatter = e_axis_formatter("percent")) %>%
     e_lm(per ~ per_sum_area_pks ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
          # name = c( 'Females', 'Males')
          name = c('Rural',  'Mixed',  'Urban')
          #name = c('normal', 'overweight', 'obese')
-    ) #%>%
+    ) %>%
+      e_theme('auritus')
     
+    )
   
   
   base_facet_bmi <- pop %>% 
@@ -446,18 +462,23 @@ base_facet_sex  <- pop %>%
     fast_food_outlets_weight_on_obesity <- base_facet_bmi %>% 
       e_charts(per_no_food, emphasis = list(focus = 'series')) %>% 
       e_scatter(per) %>%
+        e_y_axis(formatter = e_axis_formatter("percent")) %>%
       e_lm(per ~ per_no_food ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
          name = c('normal', 'overweight', 'obese')
-      ) 
+      ) %>% 
+        e_theme('auritus')
   )
   
   (
     pubs_weight_on_obesity <- base_facet_bmi %>% 
       e_charts(per_no_pubs, emphasis = list(focus = 'series')) %>% 
       e_scatter(per) %>%
+      e_y_axis(formatter = e_axis_formatter("percent")) %>%
+      e_y_axis(formatter = e_axis_formatter("percent")) %>%
       e_lm(per ~ per_no_pubs ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
            name = c('normal', 'overweight', 'obese')
-      ) 
+      ) %>% 
+      e_theme('auritus')
     )
     base_facet_bmi %>% 
       e_charts(per_no_pks, emphasis = list(focus = 'series')) %>% 
@@ -472,6 +493,19 @@ base_facet_sex  <- pop %>%
       e_lm(per ~ per_sum_area_pks ,   #no_food  sum_area_pks  no_pks mdm_rank no_pubs
            name = c('normal', 'overweight', 'obese')
       ) 
+    
+    
+
+    
+    save(list = c(
+      'males_affected_by_pubs_more_than_women',
+      'males_affected_by_food_outlets_more_than_women',
+      'females_respond_less_positively_to_green_space',
+      'semi_rural_responds_best_to_green_space',
+      'fast_food_outlets_weight_on_obesity',
+      'pubs_weight_on_obesity'
+    ),
+    file = './preprocess/obesigenic.RData')
 
   # x$x$opts$series %>% View()
   # x$x$data[[3]] %>% View()

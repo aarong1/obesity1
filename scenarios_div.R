@@ -25,24 +25,26 @@ plot <- df1 %>%
   ) |>
   e_axis(show=F)
 
+
+
 # result <- qread('result.qs')
-result=data.frame()
-
-if(dim(result)[1]==c(0)){
-  result = read.fst('3_pre_main/intermediate_populations/full_history_past_populations.fst')
-  result <- compute_cmms(result)
-  result <- add_multimorbidity_fn(result)
-}
-
-
-result %>% 
-  count(mdm_quintile_soa_name, run,year, cmms) 
-
-result %>% 
-  count(age20, run,year) 
-
-result %>% 
-  count(broad_ethnicity, run,year) 
+# result=data.frame()
+# 
+# if(dim(result)[1]==c(0)){
+#   result = read.fst('3_pre_main/intermediate_populations/full_history_past_populations.fst')
+#   result <- compute_cmms(result)
+#   result <- add_multimorbidity_fn(result)
+# }
+# 
+# 
+# result %>% 
+#   count(mdm_quintile_soa_name, run,year, cmms) 
+# 
+# result %>% 
+#   count(age20, run,year) 
+# 
+# result %>% 
+#   count(broad_ethnicity, run,year) 
   
 # result %>% 
 #   mutate(fine_townsend = cut(custom_townsend_score_dz,breaks=100)) %>% 
@@ -155,17 +157,25 @@ models <- tibble::tibble(
                 An obvious way of decreasing health inequity, as overall risk profile will extend beyond obesity in more deprived cohorts.
                 This will include then estimates of underdiagnosis and deprivation gradients in treatment access",
   
-                "Targets the most Obese and then the those Overweight in decreasing order of priority. Based solely on BMI Risk",
+                #"Targets the most Obese and then the those Overweight in decreasing order of priority. Based solely on BMI Risk",
   
-  'This targets Obesity and Overweight people\'s weight on the basis of the wider risk profile of individual, 
-        with consideration of if they smoke and drink',
-  '','','','','','','',
+                  'Targets at risk individuals for intervention that have doctor diagnosised Diabetes or are from a deprived area',
+  
+  # 'This targets Obesity and Overweight people\'s weight on the basis of the wider risk profile of individual,
+  # with consideration of if they smoke and drink',
+  
+  'This intervention includes screening, intervening on BMI, for those estimated to have diabetes but no diagnosis. May be difficult in practice' ,
+  
+  '','',  
+  'This targets Inner city deprived areas of overweight and obese people\'s weight without risk stratification or other prioritisation.',
+
+  '','','','',
   
   'This targets Obesity and Overweight people\'s weight on the basis of their more serious physiological risk profile, 
           with consideration of comorbidities of the serious kind taken into account, Atrial Fibrillation, Hypertension, T2DM, CKD etc.',
   
-  'This targets Inner city deprived areas of overweight and obese people\'s weight without risk stratification or other prioritisation.',
-  'Targets other modifiable risk factors in addition to obesity, such as smoking cessation, alcohol reduction, increased physical activity',
+'',
+'Targets other modifiable risk factors in addition to obesity, such as smoking cessation, alcohol reduction, increased physical activity',
   'Expands prescribing of Tirzepatide to all eligible patients with BMI over 30, regardless of comorbidity status',
   'Expands access to bariatric surgery to all eligible patients with BMI over 35, regardless of comorbidity status',
   'Expands access to community weight management programmes to all overweight and obese patients, regardless of comorbidity status',

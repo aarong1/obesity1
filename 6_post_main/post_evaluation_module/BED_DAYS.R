@@ -64,6 +64,8 @@ stats2223_agg <- stats2223[
   by = broad
 ]
 
+write.fst(stats2223_agg,path='./6_post_main/post_evaluation_module/preprocess/stats2223_agg.fst')
+#395,000,000
 stats_dt <- res_dt[min(year) == year,][stats2223_agg, on = .(broad),allow.cartesian=F]
 
 stats_dt <- stats_dt[, .(broad,

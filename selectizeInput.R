@@ -19,8 +19,7 @@ library(shiny)
     
     color: grey;
     }
-  
-               .selectize-control.contacts .selectize-input > div .email {
+  .selectize-control.contacts .selectize-input > div .email {
     opacity: 0.8;
   }
   .selectize-control.contacts .selectize-input > div .name + .email {
@@ -113,8 +112,12 @@ library(shiny)
       #   age=list(email = "nikola@tesla.com", name = "Nikola Tesla"),
       #   age=list(email = "someone@gmail.com")
       # )
+      
         )
-    })
+      
+    }
+    )
+    
     
     observe({
       print(input$select_to)

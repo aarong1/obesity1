@@ -1337,25 +1337,25 @@ $(document).ready(function() {
       }
       
       // Initialize pivot module if reports tab is shown
-      if (tabId === 'reports-tab') {
-        setTimeout(function() {
-          // Trigger pivot module column update
-          if (window.Shiny && window.Shiny.setInputValue) {
-            window.Shiny.setInputValue('pivot_reports_tab_shown', Math.random());
-          }
-          
-          // Re-trigger any drag-drop initialization if needed
-          if (typeof window.setupDropzone === 'function') {
-            console.log('Re-initializing pivot drag-drop zones');
-            window.setupDropzone('#column-pool');
-            window.setupDropzoneCat('#groups-drop');
-            window.setupDropzoneCat('#wide-by-drop');
-            window.setupDropzone('#values-drop');
-            window.setupDropzoneValueFunc('#value-func-drop');
-          }
-        }, 200);
-      }
-    });
+      // if (tabId === 'reports-tab') {
+      //   setTimeout(function() {
+      //     // Trigger pivot module column update
+      //     if (window.Shiny && window.Shiny.setInputValue) {
+      //       window.Shiny.setInputValue('pivot_reports_tab_shown', Math.random());
+      //     }
+      //     
+      //     // Re-trigger any drag-drop initialization if needed
+      //     if (typeof window.setupDropzone === 'function') {
+      //       console.log('Re-initializing pivot drag-drop zones');
+      //       window.setupDropzone('#column-pool');
+      //       window.setupDropzoneCat('#groups-drop');
+      //       window.setupDropzoneCat('#wide-by-drop');
+      //       window.setupDropzone('#values-drop');
+      //       window.setupDropzoneValueFunc('#value-func-drop');
+      //     }
+      //   }, 200);
+      // }
+      //});
     
     
     // setTimeout(function() {
