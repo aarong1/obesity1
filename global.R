@@ -59,7 +59,7 @@ dir.create('./3_pre_main/intermediate_populations')
 #   mode = "wb"
 # )
  
-initial_time_zero_population <- read.fst('3_pre_main/intermediate_populations/initial_time_zero_population.fst')
+# initial_time_zero_population <- read.fst('3_pre_main/intermediate_populations/initial_time_zero_population.fst')
  
 
 # download.file(
@@ -68,7 +68,7 @@ initial_time_zero_population <- read.fst('3_pre_main/intermediate_populations/in
 #   mode = "wb"
 # )
  
-base_population_w_physiological_and_modifiable_risk_factors <- read.fst('3_pre_main/intermediate_populations/base_population_w_physiological_and_modifiable_risk_factors.fst')
+# base_population_w_physiological_and_modifiable_risk_factors <- read.fst('3_pre_main/intermediate_populations/base_population_w_physiological_and_modifiable_risk_factors.fst')
 
 
 # download.file(
