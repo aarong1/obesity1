@@ -42,7 +42,7 @@ bed_days_estimator <- function( past_populations,stats2223_agg) {
            emergency_per_case)
   
   x |> 
-      left_join(per) |> 
+      left_join(per_hosp) |> 
       # left_join(bed_days_df, by= c('class' = 'broad')) |> 
     mutate(bed_days = value * bed_days_per_case) |>
     mutate(admissions = value * admissions_per_case) |> 

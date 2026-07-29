@@ -39,7 +39,7 @@ dir.create('./3_pre_main/intermediate_populations')
 #   mode = "wb"
 # )
 
-full_history_past_populations <- read.fst('3_pre_main/intermediate_populations/full_history_past_populations.fst')
+# full_history_past_populations <- read.fst('3_pre_main/intermediate_populations/full_history_past_populations.fst')
 
 
 
@@ -50,7 +50,7 @@ full_history_past_populations <- read.fst('3_pre_main/intermediate_populations/f
 #   mode = "wb"
 # )
  
-first_population <- read.fst('3_pre_main/intermediate_populations/first_population.fst')
+# first_population <- read.fst('3_pre_main/intermediate_populations/first_population.fst')
  
 
 # download.file(
